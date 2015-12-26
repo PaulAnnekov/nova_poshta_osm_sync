@@ -8,14 +8,15 @@ import 'package:logging/logging.dart';
 
 final Logger log = new Logger('main');
 final Uri root = Platform.script.resolve('..');
+final Uri dataDirectory = dataDirectory.resolve('data');
 LocationsCache locationsCache;
 
 class LocationsCache {
   Map locations;
   File file;
 
-  LocationsCache() {
-    file = new File.fromUri(root.resolve('locations_cache.json'));
+  LocationsCache(file) {
+    this.file = file;
     if (!file.existsSync())
       file.writeAsStringSync('{}', flush: true);
     String data = file.readAsStringSync();
@@ -42,9 +43,9 @@ main() async {
   Logger.root.onRecord.listen((LogRecord rec) {
     print('${rec.level.name}: ${rec.time}: ${rec.message}');
   });
-  locationsCache = new LocationsCache();
-  Map data = JSON.decode(new File.fromUri(root.resolve('data.json')).readAsStringSync());
-  List nodes = data['elements'];
+  locationsCache = new LocationsCache(new File.fromUri(dataDirectory.resolve('locations_cache.json')));
+  Map osmm = JSON.decode(new File.fromUri(dataDirectory.resolve('osmm.json')).readAsStringSync());
+  List nodes = osmm['elements'];
   int total = nodes.length;
   log.info('Total nodes: $total');
   List<List<double>> positions = [];
