@@ -1,43 +1,39 @@
 import 'dart:html';
 import 'dart:convert';
 import 'package:leaflet/leaflet.dart';
+import 'package:logging/logging.dart';
 
-main() async {
-  var map = new LeafletMap.selector('map',
-  new MapOptions()
-    ..layers = [new TileLayer(url: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png')]
-    )
-    ..setView(new LatLng(48.45, 31.5), 7);
+LeafletMap map;
+List<Map> npm;
+List<Map> osmm;
+Map<String, Map> locations;
+final Logger log = new Logger('main');
 
-  var response = await HttpRequest.getString('//localhost:8081/npm.json');
-  List<Map> npm = JSON.decode(response);
-  response = await HttpRequest.getString('//localhost:8081/osmm.json');
-  List<Map> osmm = JSON.decode(response)['elements'];
-  response = await HttpRequest.getString('//localhost:8081/locations_cache.json');
-  Map<String, Map> locations = JSON.decode(response);
-
+displayOsmms() {
   var markers = new FeatureGroup();
   osmm.forEach((place) {
-    Map address = locations['${place['lat']} ${place['lon']}']['address'];
+    Map address = getLocation(place['lat'], place['lon'])['address'];
     String text = '<b>lat</b>: ${place['lat']}<br>' +
     '<b>lon</b>: ${place['lon']}<br>';
     place['tags'].forEach((key, value) {
-        text += '<b>' + key + '</b>: ' + value + '<br>';
+      text += '<b>' + key + '</b>: ' + value + '<br>';
     });
     text += '<br>';
     address.forEach((key, value) {
       text += '<b>' + key + '</b>: ' + value + '<br>';
     });
     CircleMarker marker = new CircleMarker(new LatLng(place['lat'], place['lon']), color: 'blue', fillOpacity: '0')
-        ..bindPopup(text);
+      ..bindPopup(text);
     markers.addLayer(marker);
   });
   map.addLayer(markers);
+}
 
-  markers = new FeatureGroup();
+displayNpms() {
+  var markers = new FeatureGroup();
   npm.forEach((branch) {
     double lat = double.parse(branch['y']), lon = double.parse(branch['x']);
-    Map address = locations['$lat $lon']['address'];
+    Map address = getLocation(lat, lon)['address'];
     String text = '<b>lat</b>: ' + branch['y'] + '<br>' +
     '<b>lon</b>: ' + branch['x'] + '<br>' +
     '<b># </b>: ' + branch['n'] + '<br>' +
@@ -52,5 +48,76 @@ main() async {
     markers.addLayer(marker);
   });
   map.addLayer(markers);
+}
+
+groupByPlace() {
+  List namePriority = ['village', 'town', 'city'];
+  Map groups = {};
+  osmm.forEach((node) {
+    Map address = getLocation(node['lat'], node['lon'])['address'];
+    String placeTag = namePriority.firstWhere((name) {
+      if (address[name] != null)
+        return true;
+    }, orElse: () => null);
+    if (placeTag == null) {
+      log.info('Can not find place tag for: $node ($address)');
+      return;
+    }
+    List nameParts = [address[placeTag]];
+    if (address['county'] != null && placeTag != 'city')
+      nameParts.add(address['county']);
+    if (address['state'] != null)
+      nameParts.add(address['state']);
+    String groupName = nameParts.join(' ');
+    if (!groups.containsKey(groupName))
+      groups[groupName] = [];
+    groups[groupName].add(node);
+  });
+
+  var markers = new FeatureGroup();
+  groups.forEach((id, List<Map> nodes) {
+    double minLat = 100.0, maxLat = -1.0, minLon = 100.0, maxLon = -1.0;
+    nodes.forEach((Map node) {
+      if (node['lat'] < minLat)
+        minLat = node['lat'];
+      if (node['lat'] > maxLat)
+        maxLat = node['lat'];
+      if (node['lon'] < minLon)
+        minLon = node['lon'];
+      if (node['lon'] > maxLon)
+        maxLon = node['lon'];
+    });
+    Polygon marker = new Polygon([new LatLng(maxLat, minLon), new LatLng(minLat, minLon), new LatLng(minLat, maxLon),
+      new LatLng(maxLat, maxLon)])..bindPopup(id);
+    markers.addLayer(marker);
+  });
+  map.addLayer(markers);
+}
+
+getLocation(double lat, double lon) {
+  return locations['$lat $lon'];
+}
+
+main() async {
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((LogRecord rec) {
+    print('${rec.level.name}: ${rec.time}: ${rec.message}');
+  });
+  map = new LeafletMap.selector('map',
+  new MapOptions()
+    ..layers = [new TileLayer(url: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png')]
+    )
+    ..setView(new LatLng(48.45, 31.5), 7);
+
+  var response = await HttpRequest.getString('//localhost:8081/npm.json');
+  npm = JSON.decode(response);
+  response = await HttpRequest.getString('//localhost:8081/osmm.json');
+  osmm = JSON.decode(response)['elements'];
+  response = await HttpRequest.getString('//localhost:8081/locations_cache.json');
+  locations = JSON.decode(response);
+
+  displayOsmms();
+  displayNpms();
+  groupByPlace();
 }
 
