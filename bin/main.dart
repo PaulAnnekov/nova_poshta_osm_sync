@@ -8,7 +8,7 @@ import 'package:logging/logging.dart';
 
 final Logger log = new Logger('main');
 final Uri root = Platform.script.resolve('..');
-final Uri dataDirectory = dataDirectory.resolve('data');
+final Uri dataDirectory = root.resolve('data/');
 LocationsCache locationsCache;
 
 class LocationsCache {
@@ -45,15 +45,21 @@ main() async {
   });
   locationsCache = new LocationsCache(new File.fromUri(dataDirectory.resolve('locations_cache.json')));
   Map osmm = JSON.decode(new File.fromUri(dataDirectory.resolve('osmm.json')).readAsStringSync());
+  List npm = JSON.decode(new File.fromUri(dataDirectory.resolve('npm.json')).readAsStringSync());
   List nodes = osmm['elements'];
-  int total = nodes.length;
-  log.info('Total nodes: $total');
+  log.info('Total osm nodes: ${nodes.length}');
+  log.info('Total npm nodes: ${npm.length}');
   List<List<double>> positions = [];
   nodes.forEach((node) {
     if (!locationsCache.isExists(node['lat'], node['lon']))
       positions.add([node['lat'], node['lon']]);
   });
-  log.info('Already cached locations: ${nodes.length - positions.length}');
+  npm.forEach((node) {
+    double lat = double.parse(node['y']), lon = double.parse(node['x']);
+    if (!locationsCache.isExists(lat, lon))
+      positions.add([lat, lon]);
+  });
+  log.info('Locations to cache: ${positions.length}');
   while (positions.length > 0) {
     var position = positions.first.toList();
     await getNodes(position).then((Map location) {
