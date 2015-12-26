@@ -1,4 +1,4 @@
-name: nova_poshta_exporter
+name: nova_poshta_osm_sync
 dependencies:
   logging: "^0.11.2"
   leaflet:
