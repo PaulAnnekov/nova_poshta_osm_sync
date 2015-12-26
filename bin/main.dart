@@ -22,16 +22,17 @@ class LocationsCache {
     locations = JSON.decode(data);
   }
 
-  isExists(int locationId) {
-    return locations.containsKey(locationId.toString());
+  isExists(double lat, double lon) {
+    return locations.containsKey('$lat $lon');
   }
 
   get() {
     return locations;
   }
 
-  add(Map locations) {
-    this.locations.addAll(locations);
+  add(List<double> position, Map location) {
+    this.locations[position[0].toString() + ' ' + position[1].toString()]
+      = location;
     file.writeAsString(JSON.encode(this.locations), flush: true);
   }
 }
@@ -46,21 +47,18 @@ main() async {
   List nodes = data['elements'];
   int total = nodes.length;
   log.info('Total nodes: $total');
-  List<int> ids = [];
+  List<List<double>> positions = [];
   nodes.forEach((node) {
-    if (!locationsCache.isExists(node['id']))
-      ids.add(node['id']);
+    if (!locationsCache.isExists(node['lat'], node['lon']))
+      positions.add([node['lat'], node['lon']]);
   });
-  log.info('Already cached locations: ${nodes.length - ids.length}');
-  while (ids.length > 0) {
-    await getNodes(ids.take(50).toList()).then((List locations) {
-      Map toAdd = {};
-      locations.forEach((Map location) {
-        toAdd[location['osm_id']] = location;
-        ids.remove(int.parse(location['osm_id']));
-      });
-      log.info('${ids.length} locations left');
-      locationsCache.add(toAdd);
+  log.info('Already cached locations: ${nodes.length - positions.length}');
+  while (positions.length > 0) {
+    var position = positions.first.toList();
+    await getNodes(position).then((Map location) {
+      positions.removeAt(0);
+      log.info('${positions.length} locations left');
+      locationsCache.add(position, location);
       /*Map filtered = {};
       locations.forEach((Map location) {
         int id = int.parse(location['osm_id']);
@@ -75,12 +73,13 @@ main() async {
   }
 }
 
-Future<List> getNodes(List<int> ids) async {
-  String osmIds = ids.map((id) => 'N' + id.toString()).join(',');
+Future<Map> getNodes(List<double> position) async {
   HttpClient client = new HttpClient();
-  Uri url = new Uri.http('nominatim.openstreetmap.org', '/lookup', {
+  Uri url = new Uri.http('nominatim.openstreetmap.org', '/reverse', {
     'format': 'json',
-    'osm_ids': osmIds,
+    'lat': position[0].toString(),
+    'lon': position[1].toString(),
+    'zoom': '18',
     'email': 'paul.annekov@gmail.com',
     'accept-language': 'uk'
   });
