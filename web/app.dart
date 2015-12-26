@@ -9,9 +9,9 @@ main() async {
     )
     ..setView(new LatLng(48.45, 31.5), 7);
 
-  /*var response = await request.getString('//localhost:8081/npm.json');
-  List<Map> npm = JSON.decode(response);*/
-  var response = await HttpRequest.getString('//localhost:8081/locations_cache.json');
+  var response = await HttpRequest.getString('//localhost:8081/npm.json');
+  List<Map> npm = JSON.decode(response);
+  response = await HttpRequest.getString('//localhost:8081/locations_cache.json');
   Map<String, Map> locations = JSON.decode(response);
 
   var markers = new FeatureGroup();
@@ -22,8 +22,21 @@ main() async {
     address.forEach((key, value) {
         text += '<b>' + key + '</b>: ' + value + '<br>';
     });
-    CircleMarker marker = new CircleMarker(new LatLng(place['lat'], place['lon']), color: 'red', fillOpacity: '0')
+    CircleMarker marker = new CircleMarker(new LatLng(place['lat'], place['lon']), color: 'blue', fillOpacity: '0')
         ..bindPopup(text);
+    markers.addLayer(marker);
+  });
+  map.addLayer(markers);
+
+  markers = new FeatureGroup();
+  npm.forEach((branch) {
+    String text = '<b>lat</b>: ' + branch['y'] + '<br>' +
+    '<b>lon</b>: ' + branch['x'] + '<br>' +
+    '<b># </b>: ' + branch['n'] + '<br>' +
+    '<b>addr</b>: ' + branch['addr'] + '<br>' +
+    '<b>city</b>: ' + branch['city'];
+    CircleMarker marker = new CircleMarker(new LatLng(branch['y'], branch['x']), color: 'red', fillOpacity: '0')
+      ..bindPopup(text);
     markers.addLayer(marker);
   });
   map.addLayer(markers);

@@ -14,5 +14,6 @@ pubspec.lock
 *.js.deps
 *.js.map
 
-data/osmm.json
-data/locations_cache.json
+data/*
+
+!.gitkeep
