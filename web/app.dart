@@ -1,9 +1,10 @@
 import 'dart:html';
 import 'dart:convert';
-import 'package:leaflet/leaflet.dart';
+import 'package:nova_poshta_osm_sync/leaflet/leaflet.dart' as L;
 import 'package:logging/logging.dart';
 
-LeafletMap map;
+L.LeafletMap map;
+L.LayerGroup layers;
 List<Map> npms;
 List<Map> osmms;
 Map<String, Map> locations;
@@ -30,7 +31,7 @@ class BranchesProcessor {
 
 determineOsmmsBranchId() {
   osmms = osmms.map((node) {
-    node['tags']['n'] = getOsmmBranchId(node);
+    node['tags']['n'] = getOsmmBranchId(node) ?? 'unknown';
     return node;
   }).toList();
 }
@@ -39,19 +40,23 @@ int getOsmmBranchId(Map osmm) {
   int idFromBranch;
   int idFromName;
   Map<String, String> tags = osmm['tags'];
+  RegExp numberRegExp = new RegExp('([0-9]+)');
+  RegExp cleanerRegExp = new RegExp('[0-9]+ {0,1}кг');
   if (tags['branch'] != null)
   {
-    var matches = tags['branch'].allMatches(r'[0-9]+');
+    String branch = tags['branch'].replaceAll(cleanerRegExp, '');
+    var matches = numberRegExp.allMatches(branch);
     if (matches.length > 1)
       log.warning("osmm $osmm 'branch' tag contains more then one numbers sequence");
     if (matches.length)
-      idFromBranch = int.parse(matches.first.toString());
+      idFromBranch = int.parse(matches.first.group(0));
   }
-  var matches = tags['name'].allMatches(r'[0-9]+');
+  String name = tags['name'].replaceAll(cleanerRegExp, '');
+  var matches = numberRegExp.allMatches(name);
   if (matches.length > 1)
     log.warning("osmm $osmm 'name' tag contains more then one numbers sequence");
-  if (matches.length)
-    idFromName = int.parse(matches.first.toString());
+  if (matches.isNotEmpty)
+    idFromName = int.parse(matches.first.group(0));
   if (idFromBranch != null && idFromName != null && idFromName != idFromBranch)
     log.warning("id from 'name' tag is not equal to id from 'branch' tag for $osmm");
 
@@ -59,7 +64,6 @@ int getOsmmBranchId(Map osmm) {
 }
 
 displayMarkers(List<Map> nodes, String color) {
-  var markers = new FeatureGroup();
   nodes.forEach((node) {
     Map address = getLocation(node['lat'], node['lon'])['address'];
     String text = '<b>lat</b>: ${node['lat']}<br>' +
@@ -71,11 +75,12 @@ displayMarkers(List<Map> nodes, String color) {
     address.forEach((key, value) {
       text += '<b>$key</b>: $value<br>';
     });
-    CircleMarker marker = new CircleMarker(new LatLng(node['lat'], node['lon']), color: color, fillOpacity: '0')
-      ..bindPopup(text);
-    markers.addLayer(marker);
+    L.CircleMarker marker = L.circleMarker(L.latLng(node['lat'], node['lon']),
+        new L.PathOptions(color: color, fillOpacity: '0')).bindPopup(text);
+    marker.addTo(layers);
   });
-  map.addLayer(markers);
+  L.layers({'base': L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png')},
+    {color: layers}).addTo(map);
 }
 
 String getPlaceId(address) {
@@ -135,12 +140,12 @@ main() async {
   Logger.root.onRecord.listen((LogRecord rec) {
     print('${rec.level.name}: ${rec.time}: ${rec.message}');
   });
-  map = new LeafletMap.selector('map',
-  new MapOptions()
-    ..layers = [new TileLayer(url: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png')]
-    )
-    ..setView(new LatLng(48.45, 31.5), 7);
-
+  map = L.map('map', new L.MapOptions(
+      layers: [L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png')],
+      center: L.latLng(48.45, 31.5),
+      zoom: 7
+  ));
+  layers = L.layerGroup();
   var response = await HttpRequest.getString('//localhost:8081/npm.json');
   npms = JSON.decode(response);
   response = await HttpRequest.getString('//localhost:8081/osmm.json');
