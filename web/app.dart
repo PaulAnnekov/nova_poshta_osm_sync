@@ -119,7 +119,6 @@ List<L.Polygon> getCitiesPolygon(List nodes, String groupId) {
   L.Polygon marker = L.polygon([L.latLng(maxLat, minLon),
     L.latLng(minLat, minLon), L.latLng(minLat, maxLon),
     L.latLng(maxLat, maxLon)]).bindPopup(groupId);
-  print('$minLat $minLon $maxLat $maxLon ' + groupId.toString());
   markers.add(marker);
 
   return markers;
