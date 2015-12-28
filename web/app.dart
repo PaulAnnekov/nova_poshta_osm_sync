@@ -101,7 +101,7 @@ String getPlaceId(address) {
   return nameParts.join(' ');
 }
 
-List<L.Polygon> getCitiesPolygon(List nodes, String groupId) {
+List<L.Polygon> getCitiesPolygon(List nodes, String groupId, String color) {
   if (nodes.isEmpty)
     return [];
   List<L.Polygon> markers = [];
@@ -118,7 +118,8 @@ List<L.Polygon> getCitiesPolygon(List nodes, String groupId) {
   });
   L.Polygon marker = L.polygon([L.latLng(maxLat, minLon),
     L.latLng(minLat, minLon), L.latLng(minLat, maxLon),
-    L.latLng(maxLat, maxLon)]).bindPopup(groupId);
+    L.latLng(maxLat, maxLon)], new L.PathOptions(color: color))
+    .bindPopup(groupId);
   markers.add(marker);
 
   return markers;
@@ -148,9 +149,9 @@ groupByPlace() {
   L.LayerGroup osmmGroup = L.layerGroup();
   L.LayerGroup npmGroup = L.layerGroup();
   branchesProcessor.groupedBranches.forEach((id, Map nodes) {
-    getCitiesPolygon(nodes['osmms'], id).forEach((marker)
+    getCitiesPolygon(nodes['osmms'], id, 'red').forEach((marker)
       => marker.addTo(osmmGroup));
-    getCitiesPolygon(nodes['npms'], id).forEach((marker)
+    getCitiesPolygon(nodes['npms'], id, 'blue').forEach((marker)
       => marker.addTo(npmGroup));
   });
   controlLayers.addOverlay(osmmGroup, 'OSM cities');
