@@ -4,7 +4,7 @@ import 'package:nova_poshta_osm_sync/leaflet/leaflet.dart' as L;
 import 'package:logging/logging.dart';
 
 L.LeafletMap map;
-L.LayerGroup layers;
+L.ControlLayers controlLayers;
 List<Map> npms;
 List<Map> osmms;
 Map<String, Map> locations;
@@ -63,7 +63,8 @@ int getOsmmBranchId(Map osmm) {
   return idFromBranch != null ? idFromBranch : idFromName;
 }
 
-displayMarkers(List<Map> nodes, String color) {
+L.LayerGroup displayMarkers(List<Map> nodes, String color, String layerName) {
+  L.LayerGroup layerGroup = L.layerGroup();
   nodes.forEach((node) {
     Map address = getLocation(node['lat'], node['lon'])['address'];
     String text = '<b>lat</b>: ${node['lat']}<br>' +
@@ -77,10 +78,10 @@ displayMarkers(List<Map> nodes, String color) {
     });
     L.CircleMarker marker = L.circleMarker(L.latLng(node['lat'], node['lon']),
         new L.PathOptions(color: color, fillOpacity: '0')).bindPopup(text);
-    marker.addTo(layers);
+    marker.addTo(layerGroup);
   });
-  L.layers({'base': L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png')},
-    {color: layers}).addTo(map);
+  controlLayers.addOverlay(layerGroup, layerName);
+  return layerGroup;
 }
 
 String getPlaceId(address) {
@@ -140,12 +141,8 @@ main() async {
   Logger.root.onRecord.listen((LogRecord rec) {
     print('${rec.level.name}: ${rec.time}: ${rec.message}');
   });
-  map = L.map('map', new L.MapOptions(
-      layers: [L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png')],
-      center: L.latLng(48.45, 31.5),
-      zoom: 7
-  ));
-  layers = L.layerGroup();
+  controlLayers = L.controlLayers(null, null,
+      new L.ControlLayersOptions(collapsed: false));
   var response = await HttpRequest.getString('//localhost:8081/npm.json');
   npms = JSON.decode(response);
   response = await HttpRequest.getString('//localhost:8081/osmm.json');
@@ -163,8 +160,16 @@ main() async {
   }).toList();
 
   determineOsmmsBranchId();
-  displayMarkers(osmms, 'blue');
-  displayMarkers(npms, 'red');
+  L.LayerGroup osmmsGroup = displayMarkers(osmms, 'blue', 'OSMMs');
+  L.LayerGroup npmsGroup = displayMarkers(npms, 'red', 'NPMs');
   groupByPlace();
+
+  map = L.map('map', new L.MapOptions(
+      layers: [new L.TileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png'),
+        osmmsGroup, npmsGroup],
+      center: L.latLng(48.45, 31.5),
+      zoom: 7
+  ));
+  controlLayers.addTo(map);
 }
 

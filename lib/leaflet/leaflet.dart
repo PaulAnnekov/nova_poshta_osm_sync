@@ -1,11 +1,11 @@
+@JS('Leaflet')
 library L;
 
 import 'package:js/js.dart';
 
-@anonymous
-@JS()
+@JS('tileLayer')
 class TileLayer {
-  external factory TileLayer();
+  external factory TileLayer(String urlTemplate);
 }
 
 @anonymous
@@ -68,34 +68,33 @@ class CircleMarker {
   external CircleMarker bindPopup(String text);
 }
 
-@JS('L.map')
+@JS()
 external LeafletMap map(String id, [MapOptions options]);
 
-@JS('L.layerGroup')
+@JS()
 external LayerGroup layerGroup();
 
-@JS('L.circleMarker')
-external CircleMarker circleMarker(LatLng latlng, PathOptions options);
-
 @JS()
-class control {
-  external addLayer(String id, Map options);
-  external bindPopup(String text, Map options);
-}
-
-@JS('L.control.layers')
-external Layers layers(Map<String, TileLayer> baseLayers, [Map<String, LayerGroup> overlays]);
+external CircleMarker circleMarker(LatLng latlng, PathOptions options);
 
 @anonymous
 @JS()
-class Layers {
-  external factory Layers();
-  external addTo(LeafletMap map);
+class ControlLayersOptions {
+  external factory ControlLayersOptions({bool collapsed: true});
 }
 
-@JS('L.latLng')
-external LatLng latLng(double lat, double lng);
+@JS('control.layers')
+external ControlLayers controlLayers([baseLayers, overlays,
+  ControlLayersOptions options]);
 
-@JS('L.tileLayer')
-external TileLayer tileLayer(String urlTemplate);
+@anonymous
+@JS()
+class ControlLayers {
+  external factory ControlLayers();
+  external addTo(LeafletMap map);
+  external addBaseLayer(TileLayer layer, String name);
+  external addOverlay(LayerGroup layer, String name);
+}
 
+@JS()
+external LatLng latLng(num lat, num lng);

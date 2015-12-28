@@ -6,11 +6,13 @@
     <title>Dev environment</title>
     <link rel="stylesheet" href="packages/leaflet/leaflet.css">
     <link rel="stylesheet" href="/app.css" />
-    <script async src="packages/leaflet/leaflet-src.js"></script>
-    <script async src="app.dart" type="application/dart"></script>
-    <script async src="packages/browser/dart.js"></script>
+    <script src="packages/leaflet/leaflet-src.js"></script>
+    <script src="app.dart" type="application/dart"></script>
+    <script src="packages/browser/dart.js"></script>
 </head>
 <body>
     <div id="map"></div>
+    <!-- Workaround for https://github.com/dart-lang/sdk/issues/25318 -->
+    <script>window.Leaflet = L;</script>
 </body>
 </html>
