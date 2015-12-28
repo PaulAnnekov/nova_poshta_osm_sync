@@ -12,12 +12,12 @@ final Logger log = new Logger('main');
 final BranchesProcessor branchesProcessor = new BranchesProcessor();
 
 class BranchesProcessor {
-  Map groupedBranches = {};
+  Map<String, Map<String, List>> groupedBranches = {};
 
   _add(String groupId, Map marker, String group) {
     if (!groupedBranches.containsKey(groupId))
       groupedBranches[groupId] = {'osmms': [], 'npms': []};
-    groupedBranches[groupId][group].add(osmms);
+    groupedBranches[groupId][group].add(marker);
   }
 
   addOsmm(String groupId, Map osmm) {
@@ -101,6 +101,30 @@ String getPlaceId(address) {
   return nameParts.join(' ');
 }
 
+List<L.Polygon> getCitiesPolygon(List nodes, String groupId) {
+  if (nodes.isEmpty)
+    return [];
+  List<L.Polygon> markers = [];
+  double minLat = 100.0, maxLat = -1.0, minLon = 100.0, maxLon = -1.0;
+  nodes.forEach((Map node) {
+    if (node['lat'] < minLat)
+      minLat = node['lat'];
+    if (node['lat'] > maxLat)
+      maxLat = node['lat'];
+    if (node['lon'] < minLon)
+      minLon = node['lon'];
+    if (node['lon'] > maxLon)
+      maxLon = node['lon'];
+  });
+  L.Polygon marker = L.polygon([L.latLng(maxLat, minLon),
+    L.latLng(minLat, minLon), L.latLng(minLat, maxLon),
+    L.latLng(maxLat, maxLon)]).bindPopup(groupId);
+  print('$minLat $minLon $maxLat $maxLon ' + groupId.toString());
+  markers.add(marker);
+
+  return markers;
+}
+
 groupByPlace() {
   osmms.forEach((node) {
     Map address = getLocation(node['lat'], node['lon'])['address'];
@@ -112,24 +136,26 @@ groupByPlace() {
     branchesProcessor.addOsmm(groupName, node);
   });
 
-  /*var markers = new FeatureGroup();
-  groups.forEach((id, List<Map> nodes) {
-    double minLat = 100.0, maxLat = -1.0, minLon = 100.0, maxLon = -1.0;
-    nodes.forEach((Map node) {
-      if (node['lat'] < minLat)
-        minLat = node['lat'];
-      if (node['lat'] > maxLat)
-        maxLat = node['lat'];
-      if (node['lon'] < minLon)
-        minLon = node['lon'];
-      if (node['lon'] > maxLon)
-        maxLon = node['lon'];
-    });
-    Polygon marker = new Polygon([new LatLng(maxLat, minLon), new LatLng(minLat, minLon), new LatLng(minLat, maxLon),
-      new LatLng(maxLat, maxLon)])..bindPopup(id);
-    markers.addLayer(marker);
+  npms.forEach((node) {
+    Map address = getLocation(node['lat'], node['lon'])['address'];
+    String groupName = getPlaceId(address);
+    if (groupName == null) {
+      log.info('Can not find place tag for: $node ($address)');
+      return;
+    }
+    branchesProcessor.addNpm(groupName, node);
   });
-  map.addLayer(markers);*/
+
+  L.LayerGroup osmmGroup = L.layerGroup();
+  L.LayerGroup npmGroup = L.layerGroup();
+  branchesProcessor.groupedBranches.forEach((id, Map nodes) {
+    getCitiesPolygon(nodes['osmms'], id).forEach((marker)
+      => marker.addTo(osmmGroup));
+    getCitiesPolygon(nodes['npms'], id).forEach((marker)
+      => marker.addTo(npmGroup));
+  });
+  controlLayers.addOverlay(osmmGroup, 'OSM cities');
+  controlLayers.addOverlay(npmGroup, 'NP cities');
 }
 
 getLocation(double lat, double lon) {

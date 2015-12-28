@@ -51,7 +51,10 @@ class PathOptions {
 
 @anonymous
 @JS()
-class LayerGroup {}
+class LayerGroup {
+  external factory LayerGroup();
+  external LayerGroup addLayer(Polygon polygon);
+}
 
 @JS()
 @anonymous
@@ -69,13 +72,24 @@ class CircleMarker {
 }
 
 @JS()
+external CircleMarker circleMarker(LatLng latlng, PathOptions options);
+
+@anonymous
+@JS()
+class Polygon {
+  external factory Polygon();
+  external Polygon addTo(LayerGroup layerGroup);
+  external Polygon bindPopup(String text);
+}
+
+@JS()
+external Polygon polygon(List<LatLng> latlngs, [PathOptions options]);
+
+@JS()
 external LeafletMap map(String id, [MapOptions options]);
 
 @JS()
 external LayerGroup layerGroup();
-
-@JS()
-external CircleMarker circleMarker(LatLng latlng, PathOptions options);
 
 @anonymous
 @JS()
