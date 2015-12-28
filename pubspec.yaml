@@ -1,7 +1,5 @@
 name: nova_poshta_osm_sync
 dependencies:
   logging: "^0.11.2"
-  leaflet:
-    path: ../leaflet.dart
   browser: "^0.10.0+2"
   js: "^0.6.0"
