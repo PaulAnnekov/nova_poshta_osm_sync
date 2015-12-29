@@ -1,5 +1,6 @@
 import 'dart:html';
 import 'dart:convert';
+import 'dart:js' as js;
 import 'package:nova_poshta_osm_sync/leaflet/leaflet.dart' as L;
 import 'package:logging/logging.dart';
 
@@ -162,11 +163,10 @@ getLocation(double lat, double lon) {
   return locations['$lat $lon'];
 }
 
-main() async {
-  Logger.root.level = Level.ALL;
-  Logger.root.onRecord.listen((LogRecord rec) {
-    print('${rec.level.name}: ${rec.time}: ${rec.message}');
-  });
+onReady(_) async {
+  await window.animationFrame;
+  js.context['Leaflet'] = js.context['L'].callMethod('noConflict');
+
   controlLayers = L.controlLayers(null, null,
       new L.ControlLayersOptions(collapsed: false));
   var response = await HttpRequest.getString('//localhost:8081/npm.json');
@@ -192,10 +192,22 @@ main() async {
 
   map = L.map('map', new L.MapOptions(
       layers: [new L.TileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png'),
-        osmmsGroup, npmsGroup],
+      osmmsGroup, npmsGroup],
       center: L.latLng(48.45, 31.5),
       zoom: 7
   ));
   controlLayers.addTo(map);
+}
+
+main() async {
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((LogRecord rec) {
+    print('${rec.level.name}: ${rec.time}: ${rec.message}');
+  });
+  // Workaround for https://github.com/dart-lang/sdk/issues/25318#issuecomment-167682786
+  var leaflet = new ScriptElement()..src =
+      'http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js';
+  leaflet.onLoad.listen(onReady);
+  document.body.append(leaflet);
 }
 
