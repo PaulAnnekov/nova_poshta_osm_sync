@@ -50,14 +50,9 @@ main() async {
   log.info('Total osm nodes: ${nodes.length}');
   log.info('Total npm nodes: ${npm.length}');
   List<List<double>> positions = [];
-  nodes.forEach((node) {
+  nodes..addAll(npm)..forEach((node) {
     if (!locationsCache.isExists(node['lat'], node['lon']))
       positions.add([node['lat'], node['lon']]);
-  });
-  npm.forEach((node) {
-    double lat = double.parse(node['y']), lon = double.parse(node['x']);
-    if (!locationsCache.isExists(lat, lon))
-      positions.add([lat, lon]);
   });
   log.info('Locations to cache: ${positions.length}');
   while (positions.length > 0) {
