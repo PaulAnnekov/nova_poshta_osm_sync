@@ -5,8 +5,7 @@ library L;
 
 import 'package:js/js.dart';
 
-@anonymous
-@JS()
+// Can't add @anonymous and @JS(). It will crash compiler.
 class ILayer {}
 
 @anonymous
