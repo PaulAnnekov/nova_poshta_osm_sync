@@ -4,9 +4,13 @@ library L;
 import 'package:js/js.dart';
 
 @JS('tileLayer')
-class TileLayer {
+class TileLayer implements ILayer {
   external factory TileLayer(String urlTemplate);
 }
+
+@anonymous
+@JS()
+class ILayer {}
 
 @anonymous
 @JS()
@@ -51,7 +55,7 @@ class PathOptions {
 
 @anonymous
 @JS()
-class LayerGroup {
+class LayerGroup implements ILayer {
   external factory LayerGroup();
   external LayerGroup addLayer(Polygon polygon);
 }
