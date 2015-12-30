@@ -1,5 +1,11 @@
 name: nova_poshta_osm_sync
+version: 0.0.1
+description: Syncs branches from novaposhta.ua to osm
+author: Paul Annekov <paul.annekov@gmail.com>
+homepage: https://github.com/PaulAnnekov/nova_poshta_osm_sync
 dependencies:
   logging: "^0.11.2"
   browser: "^0.10.0+2"
   js: "^0.6.0"
+environment:
+  sdk: ">=1.13.1"
