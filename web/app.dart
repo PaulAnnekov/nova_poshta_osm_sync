@@ -210,18 +210,18 @@ groupByPlace() {
     var npmCity = getNPMCity(node['city']);
     if (groupParts['place'] != null &&
         groupParts['place'].toLowerCase() != npmCity.toLowerCase()) {
-      log.info('NP city and Nomatim city differs for: $node ($address)');
+      log.fine('NP city and Nomatim city differs for: $node ($address)');
       isSearch = true;
     }
     if (groupParts['place'] == null) {
-      log.info('Can not find place tag for: $node ($address)');
+      log.fine('Can not find place tag for: $node ($address)');
       isSearch = true;
     }
     if (isSearch) {
       var location = locationsProcessor.getClosestLocationByPlace(npmCity,
           [node['lat'], node['lon']]);
       if (location == null)
-        log.info("Can not find node's city in locations: $node");
+        log.fine("Can not find node's city in locations: $node");
       else
         groupParts = getGroupIdParts(location['address']);
     }
@@ -230,14 +230,18 @@ groupByPlace() {
 
   L.LayerGroup osmmGroup = L.layerGroup();
   L.LayerGroup npmGroup = L.layerGroup();
+  L.LayerGroup unitedGroup = L.layerGroup();
   branchesProcessor.groupedBranches.forEach((id, Map nodes) {
     getCitiesPolygon(nodes['osmms'], id, 'blue').forEach((marker)
-      => marker.addTo(osmmGroup));
+    => marker.addTo(osmmGroup));
     getCitiesPolygon(nodes['npms'], id, 'red').forEach((marker)
-      => marker.addTo(npmGroup));
+    => marker.addTo(npmGroup));
+    getCitiesPolygon(nodes['osmms']..addAll(nodes['npms']), id, 'green')
+        .forEach((marker) => marker.addTo(unitedGroup));
   });
   controlLayers.addOverlay(osmmGroup, 'OSM cities');
   controlLayers.addOverlay(npmGroup, 'NP cities');
+  controlLayers.addOverlay(unitedGroup, 'United cities');
 }
 
 onReady(_) async {
@@ -277,7 +281,7 @@ onReady(_) async {
 }
 
 main() async {
-  Logger.root.level = Level.ALL;
+  Logger.root.level = Level.INFO;
   Logger.root.onRecord.listen((LogRecord rec) {
     print('${rec.level.name}: ${rec.time}: ${rec.message}');
   });
