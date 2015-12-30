@@ -13,7 +13,7 @@ class MapWrapper {
     controlLayers = L.controlLayers(null, null,
         new L.ControlLayersOptions(collapsed: false));
     layerGroups.add(
-        new L.TileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png'));
+        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png'));
   }
 
   initMap() {
