@@ -6,7 +6,6 @@
 build/
 packages
 .packages
-pubspec.lock
 
 # Or the files created by dart2js.
 *.dart.js
