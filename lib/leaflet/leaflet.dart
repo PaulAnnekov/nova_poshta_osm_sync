@@ -69,24 +69,21 @@ class ControlLayersOptions {
 @anonymous
 @JS()
 class MapOptions {
-  external factory MapOptions(
-      {List<TileLayer> layers,
-      LatLng center,
-      int zoom
-      });
+  external factory MapOptions({
+    List<TileLayer> layers,
+    LatLng center,
+    int zoom
+  });
 }
 
 @anonymous
 @JS()
 class PathOptions {
-  external factory PathOptions(
-      {String color,
-      String fillOpacity});
-  external String get color;
-  external set color(String v);
-  external String get fillOpacity;
-  external set fillOpacity(String v);
+  external factory PathOptions({String color, String fillOpacity});
 }
+
+@JS()
+external LeafletMap map(String id, [MapOptions options]);
 
 @JS()
 external TileLayer tileLayer(String urlTemplate);
@@ -96,9 +93,6 @@ external CircleMarker circleMarker(LatLng latlng, PathOptions options);
 
 @JS()
 external Polygon polygon(List<LatLng> latlngs, [PathOptions options]);
-
-@JS()
-external LeafletMap map(String id, [MapOptions options]);
 
 @JS()
 external LayerGroup layerGroup();
