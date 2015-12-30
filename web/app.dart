@@ -152,8 +152,7 @@ LinkedHashMap<String, String> getGroupIdParts(address) {
       return true;
   }, orElse: () => null);
   LinkedHashMap nameParts = new LinkedHashMap();
-  if (placeTag != null)
-    nameParts['place'] = address[placeTag];
+  nameParts['place'] = placeTag != null ? address[placeTag] : null;
   if (address['county'] != null && placeTag != 'city')
     nameParts['county'] = address['county'];
   if (address['state'] != null)
@@ -220,8 +219,10 @@ groupByPlace() {
     if (isSearch) {
       var location = locationsProcessor.getClosestLocationByPlace(npmCity,
           [node['lat'], node['lon']]);
-      if (location == null)
+      if (location == null) {
         log.fine("Can not find node's city in locations: $node");
+        groupParts['place'] = npmCity;
+      }
       else
         groupParts = getGroupIdParts(location['address']);
     }
