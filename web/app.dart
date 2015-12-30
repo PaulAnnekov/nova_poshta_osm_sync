@@ -7,7 +7,6 @@ import 'package:nova_poshta_osm_sync/branches_processor.dart';
 import 'package:nova_poshta_osm_sync/map_wrapper.dart';
 import 'package:logging/logging.dart';
 
-MapWrapper map;
 List<Map> npms;
 List<Map> osmms;
 LocationsProcessor locationsProcessor;
@@ -128,7 +127,7 @@ onReady(_) async {
     return branch;
   }).toList();
 
-  map = new MapWrapper(locationsProcessor);
+  MapWrapper map = new MapWrapper(locationsProcessor);
   determineOsmmsBranchId();
   groupByPlace();
   map.displayMarkers(osmms, 'blue', 'OSMMs');
