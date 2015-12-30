@@ -3,7 +3,7 @@ import 'package:nova_poshta_osm_sync/branches_processor.dart';
 import 'package:nova_poshta_osm_sync/location_processor.dart';
 
 class MapWrapper {
-  L.LeafletMap map;
+  L.Map map;
   L.ControlLayers controlLayers;
   List<L.ILayer> layerGroups = [];
   LocationsProcessor _locationsProcessor;

@@ -29,8 +29,8 @@ class LayerGroup implements ILayer {
 
 @JS()
 @anonymous
-class LeafletMap {
-  external factory LeafletMap();
+class Map {
+  external factory Map();
   external setView(LatLng center, int zoom);
 }
 
@@ -54,7 +54,7 @@ class Polygon {
 @JS()
 class ControlLayers {
   external factory ControlLayers();
-  external addTo(LeafletMap map);
+  external addTo(Map map);
   external addBaseLayer(TileLayer layer, String name);
   external addOverlay(LayerGroup layer, String name);
 }
@@ -82,7 +82,7 @@ class PathOptions {
 }
 
 @JS()
-external LeafletMap map(String id, [MapOptions options]);
+external Map map(String id, [MapOptions options]);
 
 @JS()
 external TileLayer tileLayer(String urlTemplate);
