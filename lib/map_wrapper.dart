@@ -40,7 +40,7 @@ class MapWrapper {
         text += '<b>$key</b>: $value<br>';
       });
       L.CircleMarker marker = L.circleMarker(L.latLng(node['lat'], node['lon']),
-          new L.PathOptions(color: color, fillOpacity: '0')).bindPopup(text);
+          new L.PathOptions(color: color, fillOpacity: 0)).bindPopup(text);
       marker.addTo(layerGroup);
     });
     controlLayers.addOverlay(layerGroup, layerName);
@@ -64,10 +64,10 @@ class MapWrapper {
     controlLayers.addOverlay(unitedGroup, 'United cities');
   }
 
-  List<L.Polygon> _getCitiesPolygon(List nodes, String groupId, String color) {
+  List<L.Path> _getCitiesPolygon(List nodes, String groupId, String color) {
     if (nodes.isEmpty)
       return [];
-    List<L.Polygon> markers = [];
+    List<L.Path> markers = [];
     double minLat = 100.0, maxLat = -1.0, minLon = 100.0, maxLon = -1.0;
     nodes.forEach((Map node) {
       if (node['lat'] < minLat)
@@ -79,10 +79,17 @@ class MapWrapper {
       if (node['lon'] > maxLon)
         maxLon = node['lon'];
     });
-    L.Polygon marker = L.polygon([L.latLng(maxLat, minLon),
-    L.latLng(minLat, minLon), L.latLng(minLat, maxLon),
-    L.latLng(maxLat, maxLon)], new L.PathOptions(color: color))
-        .bindPopup(groupId);
+    L.Path marker;
+    // If single branch in city - draw dot, not polygon. Polygon won't be rendered.
+    if (minLat == maxLat && minLon == maxLon) {
+      marker = L.circleMarker(L.latLng(minLat, maxLon),
+          new L.CircleMarkerPathOptions(color: color, fillOpacity: 1, radius: 2));
+    } else {
+      marker = L.polygon([L.latLng(maxLat, minLon),
+      L.latLng(minLat, minLon), L.latLng(minLat, maxLon),
+      L.latLng(maxLat, maxLon)], new L.PathOptions(color: color))
+          .bindPopup(groupId);
+    }
     markers.add(marker);
 
     return markers;

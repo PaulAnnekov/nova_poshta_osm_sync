@@ -8,4 +8,4 @@ dependencies:
   browser: "^0.10.0+2"
   js: "^0.6.0"
 environment:
-  sdk: ">=1.13.1"
+  sdk: ">=1.15.0"

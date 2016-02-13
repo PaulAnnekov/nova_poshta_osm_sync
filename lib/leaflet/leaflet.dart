@@ -10,6 +10,14 @@ class ILayer {}
 
 @anonymous
 @JS()
+class Path {
+  external factory Path();
+  external Path addTo(LayerGroup layerGroup);
+  external Path bindPopup(String text);
+}
+
+@anonymous
+@JS()
 class TileLayer implements ILayer {
   external factory TileLayer();
 }
@@ -36,18 +44,14 @@ class Map {
 
 @anonymous
 @JS()
-class CircleMarker {
+class CircleMarker extends Path {
   external factory CircleMarker();
-  external CircleMarker addTo(LayerGroup layerGroup);
-  external CircleMarker bindPopup(String text);
 }
 
 @anonymous
 @JS()
-class Polygon {
+class Polygon extends Path {
   external factory Polygon();
-  external Polygon addTo(LayerGroup layerGroup);
-  external Polygon bindPopup(String text);
 }
 
 @anonymous
@@ -78,7 +82,13 @@ class MapOptions {
 @anonymous
 @JS()
 class PathOptions {
-  external factory PathOptions({String color, String fillOpacity});
+  external factory PathOptions({String color, num fillOpacity});
+}
+
+@anonymous
+@JS()
+class CircleMarkerPathOptions extends PathOptions {
+  external factory CircleMarkerPathOptions({String color, num fillOpacity, num radius});
 }
 
 @JS()
@@ -88,7 +98,7 @@ external Map map(String id, [MapOptions options]);
 external TileLayer tileLayer(String urlTemplate);
 
 @JS()
-external CircleMarker circleMarker(LatLng latlng, PathOptions options);
+external CircleMarker circleMarker(LatLng latlng, CircleMarkerPathOptions options);
 
 @JS()
 external Polygon polygon(List<LatLng> latlngs, [PathOptions options]);
