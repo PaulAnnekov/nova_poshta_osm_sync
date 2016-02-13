@@ -79,7 +79,7 @@ groupByPlace() {
         node['lon'])['address'];
     var groupParts = getGroupIdParts(address);
     var isSearch = false;
-    var npmCity = new LocationName(node['city']);
+    var npmCity = new LocationName.fromNP(node['city']);
     if (groupParts['place'] != null && groupParts['place'] != npmCity) {
       log.fine('NP city and Nomatim city differs for: $node ($address)');
       isSearch = true;
@@ -93,7 +93,11 @@ groupByPlace() {
           [node['lat'], node['lon']]);
       if (location == null) {
         log.fine("Can not find node's city in locations: $node");
+        // Nomatim location has bad place name. We rename this place to NP's one. Fixes Лопатин case.
+        var oldId = groupParts.values.join(' ');
         groupParts['place'] = npmCity;
+        var newId = groupParts.values.join(' ');
+        branchesProcessor.renameGroup(oldId, newId);
       }
       else
         groupParts = getGroupIdParts(location['address']);

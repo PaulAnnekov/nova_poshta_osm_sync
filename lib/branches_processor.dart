@@ -8,6 +8,13 @@ class BranchesProcessor {
     groupedBranches[groupId][group].add(marker);
   }
 
+  renameGroup(String oldId, String newId) {
+    if (groupedBranches[oldId] == null)
+      return;
+    groupedBranches[newId] = groupedBranches[oldId];
+    groupedBranches.remove(oldId);
+  }
+
   addOsmm(String groupId, Map osmm) {
     _add(groupId, osmm, 'osmms');
   }
