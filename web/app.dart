@@ -5,6 +5,7 @@ import 'dart:js' as js;
 import 'package:nova_poshta_osm_sync/location_processor.dart';
 import 'package:nova_poshta_osm_sync/branches_processor.dart';
 import 'package:nova_poshta_osm_sync/map_wrapper.dart';
+import 'package:nova_poshta_osm_sync/location_name.dart';
 import 'package:logging/logging.dart';
 
 List<Map> npms;
@@ -47,23 +48,18 @@ int getOsmmBranchId(Map osmm) {
   return idFromBranch != null ? idFromBranch : idFromName;
 }
 
-LinkedHashMap<String, String> getGroupIdParts(address) {
+LinkedHashMap<String, LocationName> getGroupIdParts(address) {
   String placeTag = LocationsProcessor.NAME_PRIORITY.firstWhere((name) {
     if (address[name] != null)
       return true;
   }, orElse: () => null);
   LinkedHashMap nameParts = new LinkedHashMap();
-  nameParts['place'] = placeTag != null ? address[placeTag] : null;
+  nameParts['place'] = placeTag != null ? new LocationName(address[placeTag]) : null;
   if (address['county'] != null && placeTag != 'city')
-    nameParts['county'] = address['county'];
+    nameParts['county'] = new LocationName(address['county']);
   if (address['state'] != null)
-    nameParts['state'] = address['state'];
+    nameParts['state'] = new LocationName(address['state']);
   return nameParts;
-}
-
-String getNPMCity(String city) {
-  var cityParts = city.split('(');
-  return cityParts[0].trim();
 }
 
 groupByPlace() {
@@ -83,9 +79,8 @@ groupByPlace() {
         node['lon'])['address'];
     var groupParts = getGroupIdParts(address);
     var isSearch = false;
-    var npmCity = getNPMCity(node['city']);
-    if (groupParts['place'] != null &&
-        groupParts['place'].toLowerCase() != npmCity.toLowerCase()) {
+    var npmCity = new LocationName(node['city']);
+    if (groupParts['place'] != null && groupParts['place'] != npmCity) {
       log.fine('NP city and Nomatim city differs for: $node ($address)');
       isSearch = true;
     }

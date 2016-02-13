@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:nova_poshta_osm_sync/location_name.dart';
 
 class LocationsProcessor {
   Map<String, Map> _locations;
@@ -8,16 +9,15 @@ class LocationsProcessor {
     _locations = locations;
   }
 
-  Map getClosestLocationByPlace(String place, List<double> latlon,
+  Map getClosestLocationByPlace(LocationName place, List<double> latlon,
       [num maxDistance = 20000]) {
-    place = place.toLowerCase();
     Map closestLocation = null;
     double closestDistance = null;
     for (String i in _locations.keys) {
       Map location = _locations[i];
       Map<String, String> address = location['address'];
       bool isMatch = LocationsProcessor.NAME_PRIORITY.firstWhere((name) {
-        if (address[name] != null && address[name].toLowerCase() == place)
+        if (address[name] != null && new LocationName(address[name]) == place)
           return true;
       }, orElse: () => null) != null;
       if (!isMatch)

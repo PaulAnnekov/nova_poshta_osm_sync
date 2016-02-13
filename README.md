@@ -50,5 +50,4 @@ Run `pub serve web data` and open http://localhost:8080/ in browser to see resul
 
 TODO:
 -----
-- Лопатин 
-- Межгорье (different apostrophe symbol: `’` and `'`)
+- Лопатин
