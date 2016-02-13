@@ -43,7 +43,7 @@ class MapWrapper {
           new L.PathOptions(color: color, fillOpacity: 0)).bindPopup(text);
       marker.addTo(layerGroup);
     });
-    controlLayers.addOverlay(layerGroup, layerName);
+    controlLayers.addOverlay(layerGroup, '<span style="color: $color">$layerName</span>');
     layerGroups.add(layerGroup);
   }
 
