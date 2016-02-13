@@ -47,3 +47,8 @@ Run `dart main.dart` to generate `data/locations_cache.json`.
 Data analyze:
 -------------
 Run `pub serve web data` and open http://localhost:8080/ in browser to see results on map.
+
+TODO:
+-----
+- Лопатин 
+- Межгорье (different apostrophe symbol: `’` and `'`)
