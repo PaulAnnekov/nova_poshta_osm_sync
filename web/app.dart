@@ -143,7 +143,7 @@ main() async {
   });
   // Workaround for https://github.com/dart-lang/sdk/issues/25318#issuecomment-167682786
   var leaflet = new ScriptElement()..src =
-      'http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js';
+      'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet-src.js';
   leaflet.onLoad.listen(onReady);
   document.body.append(leaflet);
 }

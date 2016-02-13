@@ -83,12 +83,16 @@ class MapWrapper {
     // If single branch in city - draw dot, not polygon. Polygon won't be rendered.
     if (minLat == maxLat && minLon == maxLon) {
       marker = L.circleMarker(L.latLng(minLat, maxLon),
-          new L.CircleMarkerPathOptions(color: color, fillOpacity: 1, radius: 2));
+          new L.CircleMarkerPathOptions(color: color, fillOpacity: 1, radius: 2)).bindPopup(groupId);
     } else {
       marker = L.polygon([L.latLng(maxLat, minLon),
       L.latLng(minLat, minLon), L.latLng(minLat, maxLon),
       L.latLng(maxLat, maxLon)], new L.PathOptions(color: color))
           .bindPopup(groupId);
+      // TODO: fails in Chrome https://github.com/dart-lang/sdk/issues/25777
+      marker.on('dblclick', (event) {
+        marker.bringToBack();
+      });
     }
     markers.add(marker);
 

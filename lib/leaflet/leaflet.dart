@@ -8,12 +8,16 @@ import 'package:js/js.dart';
 // Can't add @anonymous and @JS(). It will crash compiler.
 class ILayer {}
 
+typedef void Callback(event);
+
 @anonymous
 @JS()
 class Path {
   external factory Path();
   external Path addTo(LayerGroup layerGroup);
   external Path bindPopup(String text);
+  external Path bringToBack();
+  external Path on(String type, Callback callback);
 }
 
 @anonymous
