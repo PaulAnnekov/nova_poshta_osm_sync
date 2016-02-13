@@ -12,7 +12,7 @@ class BranchesProcessor {
     _add(groupId, osmm, 'osmms');
   }
 
-  addNpm(String groupId, Map osmm) {
-    _add(groupId, osmm, 'npms');
+  addNpm(String groupId, Map npm) {
+    _add(groupId, npm, 'npms');
   }
 }
