@@ -56,8 +56,8 @@ class MapWrapper {
       => marker.addTo(osmmGroup));
       _getCitiesPolygon(nodes['npms'], id, 'red').forEach((marker)
       => marker.addTo(npmGroup));
-      _getCitiesPolygon(nodes['osmms']..addAll(nodes['npms']), id, 'green')
-          .forEach((marker) => marker.addTo(unitedGroup));
+      _getCitiesPolygon(new List.from(nodes['osmms'])..addAll(nodes['npms']),
+          id, 'green').forEach((marker) => marker.addTo(unitedGroup));
     });
     controlLayers.addOverlay(osmmGroup, 'OSM cities');
     controlLayers.addOverlay(npmGroup, 'NP cities');
