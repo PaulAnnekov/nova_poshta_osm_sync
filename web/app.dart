@@ -129,8 +129,8 @@ onReady(_) async {
   MapWrapper map = new MapWrapper(locationsProcessor);
   determineOsmmsBranchId();
   groupByPlace();
-  map.displayMarkers(osmms, 'blue', 'OSMMs');
-  map.displayMarkers(npms, 'red', 'NPMs');
+  map.displayMarkers(osmms, MapWrapper.OSMM_COLOR, 'OSMMs');
+  map.displayMarkers(npms, MapWrapper.NPM_COLOR, 'NPMs');
   map.initMap();
   map.displayCities(branchesProcessor);
 }

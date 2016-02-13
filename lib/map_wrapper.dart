@@ -7,6 +7,9 @@ class MapWrapper {
   L.ControlLayers controlLayers;
   List<L.ILayer> layerGroups = [];
   LocationsProcessor _locationsProcessor;
+  static String NPM_COLOR = 'red';
+  static String OSMM_COLOR = 'blue';
+  static String JOIN_COLOR = 'green';
 
   MapWrapper(LocationsProcessor locationsProcessor) {
     _locationsProcessor = locationsProcessor;
@@ -59,9 +62,9 @@ class MapWrapper {
       _getCitiesPolygon(new List.from(nodes['osmms'])..addAll(nodes['npms']),
           id, 'green').forEach((marker) => marker.addTo(unitedGroup));
     });
-    controlLayers.addOverlay(osmmGroup, 'OSM cities');
-    controlLayers.addOverlay(npmGroup, 'NP cities');
-    controlLayers.addOverlay(unitedGroup, 'United cities');
+    controlLayers.addOverlay(osmmGroup, '<span style="color: $OSMM_COLOR">OSM cities</span>');
+    controlLayers.addOverlay(npmGroup, '<span style="color: $NPM_COLOR">NP cities</span>');
+    controlLayers.addOverlay(unitedGroup, '<span style="color: $JOIN_COLOR">United cities</span>');
   }
 
   List<L.Path> _getCitiesPolygon(List nodes, String groupId, String color) {
