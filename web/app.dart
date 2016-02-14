@@ -56,13 +56,22 @@ int getOsmmBranchId(Map osmm) {
   return idFromBranch != null ? idFromBranch : idFromName;
 }
 
-LinkedHashMap<String, LocationName> getGroupIdParts(address) {
-  String placeTag = LocationsProcessor.NAME_PRIORITY.firstWhere((name) {
+LinkedHashMap<String, LocationName> getGroupIdParts(Map address, [LocationName preferredCity]) {
+  // preferredCity (aka NP city) ignores tags priority. Fixes Ладижин (Вінницька область) case.
+  LinkedHashMap<String, LocationName> places = new LinkedHashMap();
+  LocationsProcessor.NAME_PRIORITY.forEach((name) {
     if (address[name] != null)
-      return true;
-  }, orElse: () => null);
+      places[name] = new LocationName(address[name]);
+  });
+  String placeTag;
+  if (preferredCity != null && places.values.contains(preferredCity)) {
+    placeTag = places.keys.elementAt(places.values.toList().indexOf(preferredCity));
+  } else {
+    placeTag = !places.isEmpty ? places.keys.first : null;
+  }
+
   LinkedHashMap nameParts = new LinkedHashMap();
-  nameParts['place'] = placeTag != null ? new LocationName(address[placeTag]) : null;
+  nameParts['place'] = places[placeTag];
   if (address['county'] != null && placeTag != 'city')
     nameParts['county'] = new LocationName(address['county']);
   if (address['state'] != null)
@@ -85,9 +94,9 @@ groupByPlace() {
   npms.forEach((node) {
     Map address = locationsProcessor.getLocation(node['lat'],
         node['lon'])['address'];
-    var groupParts = getGroupIdParts(address);
-    var isSearch = false;
     var npmCity = new LocationName.fromNP(node['city']);
+    var groupParts = getGroupIdParts(address, npmCity);
+    var isSearch = false;
     if (groupParts['place'] != null && groupParts['place'] != npmCity) {
       log.fine('NP city and Nomatim city differs for: $node ($address)');
       isSearch = true;
