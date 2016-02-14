@@ -96,11 +96,17 @@ groupByPlace() {
         // Nomatim location has bad place name. We rename this place to NP's one. Fixes Лопатин case.
         var oldId = groupParts.values.join(' ');
         groupParts['place'] = npmCity;
+        // Don't rename NP locations. They have higher priority. Fixes Требухів and Дударків case.
+        if (branchesProcessor.getGroup(oldId)['npms'].isEmpty) {
+          var newId = groupParts.values.join(' ');
+          branchesProcessor.renameGroup(oldId, newId);
+        }
+      } else {
+        var oldId = groupParts.values.join(' ');
+        groupParts = getGroupIdParts(location['address']);
         var newId = groupParts.values.join(' ');
         branchesProcessor.renameGroup(oldId, newId);
       }
-      else
-        groupParts = getGroupIdParts(location['address']);
     }
     branchesProcessor.addNpm(groupParts.values.join(' '), node);
   });

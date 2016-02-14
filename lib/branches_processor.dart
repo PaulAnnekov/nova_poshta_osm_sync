@@ -9,9 +9,11 @@ class BranchesProcessor {
   }
 
   renameGroup(String oldId, String newId) {
-    if (groupedBranches[oldId] == null)
+    // newId == oldId - "кримське дзержинськаміськарада донецькаобласть" case
+    if (groupedBranches[oldId] == null || newId == oldId)
       return;
-    groupedBranches[newId] = groupedBranches[oldId];
+    groupedBranches[oldId]['osmms'].forEach((marker) => _add(newId, marker, 'osmms'));
+    groupedBranches[oldId]['npms'].forEach((marker) => _add(newId, marker, 'npms'));
     groupedBranches.remove(oldId);
   }
 
@@ -21,5 +23,9 @@ class BranchesProcessor {
 
   addNpm(String groupId, Map npm) {
     _add(groupId, npm, 'npms');
+  }
+
+  Map<String, List> getGroup(String groupId) {
+    return groupedBranches[groupId] ?? {'osmms': [], 'npms': []};
   }
 }

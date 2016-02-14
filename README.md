@@ -48,7 +48,12 @@ Data analyze:
 -------------
 Run `pub serve web data` and open http://localhost:8080/ in browser to see results on map.
 
-TODO:
------
+Edge cases:
+-----------
 - Требухів и Дударків
 - Бориспіль (Мартусівка)
+- Лопатин
+
+TODO:
+-----
+- null біловодськийрайон луганськаобласть
