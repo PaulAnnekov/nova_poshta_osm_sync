@@ -91,24 +91,18 @@ groupByPlace() {
     if (isSearch) {
       var location = locationsProcessor.getClosestLocationByPlace(npmCity,
           [node['lat'], node['lon']]);
-      // TODO: de-duplicate
+      String oldId = groupParts.values.join(' ');
       if (location == null) {
         log.fine("Can not find node's city in locations: $node");
         // Nomatim location has bad place name. We rename this place to NP's one. Fixes Лопатин case.
-        var oldId = groupParts.values.join(' ');
         groupParts['place'] = npmCity;
-        // Don't rename NP locations. They have higher priority. Fixes Требухів and Дударків case.
-        if (branchesProcessor.getGroup(oldId)['npms'].isEmpty) {
-          var newId = groupParts.values.join(' ');
-          branchesProcessor.renameGroup(oldId, newId);
-        }
       } else {
-        var oldId = groupParts.values.join(' ');
         groupParts = getGroupIdParts(location['address']);
-        if (branchesProcessor.getGroup(oldId)['npms'].isEmpty) {
-          var newId = groupParts.values.join(' ');
-          branchesProcessor.renameGroup(oldId, newId);
-        }
+      }
+      // Don't rename NP locations. They have higher priority. Fixes Требухів and Дударків case.
+      if (branchesProcessor.getGroup(oldId)['npms'].isEmpty) {
+        var newId = groupParts.values.join(' ');
+        branchesProcessor.renameGroup(oldId, newId);
       }
     }
     branchesProcessor.addNpm(groupParts.values.join(' '), node);
