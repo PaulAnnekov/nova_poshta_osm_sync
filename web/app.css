@@ -7,3 +7,20 @@ html, body {
 #map {
     height: 100%;
 }
+
+#loader {
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    background-color: #B2C3C2;
+    padding: 10px;
+    background: #fff url('/loader.svg') no-repeat center top;
+    min-width: 99px;
+    padding-top: 121px;
+    text-align: center;
+}
+
+#loader.loading {
+    display: block;
+}

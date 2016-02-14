@@ -6,6 +6,7 @@ import 'package:nova_poshta_osm_sync/location_processor.dart';
 import 'package:nova_poshta_osm_sync/branches_processor.dart';
 import 'package:nova_poshta_osm_sync/map_wrapper.dart';
 import 'package:nova_poshta_osm_sync/location_name.dart';
+import 'package:nova_poshta_osm_sync/ui_loader.dart';
 import 'package:logging/logging.dart';
 
 List<Map> npms;
@@ -13,6 +14,7 @@ List<Map> osmms;
 LocationsProcessor locationsProcessor;
 final Logger log = new Logger('main');
 final BranchesProcessor branchesProcessor = new BranchesProcessor();
+final UILoader uiLoader = new UILoader(querySelector('#loader'));
 
 determineOsmmsBranchId() {
   osmms = osmms.map((node) {
@@ -118,9 +120,11 @@ groupByPlace() {
 }
 
 onReady(_) async {
+  uiLoader.setState(UIStates.init);
   await window.animationFrame;
   js.context['Leaflet'] = js.context['L'].callMethod('noConflict');
 
+  uiLoader.setState(UIStates.data);
   var response = await HttpRequest.getString('//localhost:8081/npm.json');
   npms = JSON.decode(response);
   response = await HttpRequest.getString('//localhost:8081/osmm.json');
@@ -128,6 +132,7 @@ onReady(_) async {
   response = await HttpRequest.getString('//localhost:8081/locations_cache.json');
   locationsProcessor = new LocationsProcessor(JSON.decode(response));
 
+  uiLoader.setState(UIStates.prepare);
   npms = npms.map((branch) {
     branch['tags'] = {
       'n': branch['n'],
@@ -139,11 +144,14 @@ onReady(_) async {
 
   MapWrapper map = new MapWrapper(locationsProcessor);
   determineOsmmsBranchId();
+  uiLoader.setState(UIStates.group);
   groupByPlace();
+  uiLoader.setState(UIStates.display);
   map.displayMarkers(osmms, MapWrapper.OSMM_COLOR, 'OSMMs');
   map.displayMarkers(npms, MapWrapper.NPM_COLOR, 'NPMs');
   map.initMap();
   map.displayCities(branchesProcessor);
+  uiLoader.setState(UIStates.end);
 }
 
 main() async {
