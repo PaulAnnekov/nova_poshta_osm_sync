@@ -29,5 +29,7 @@ class UILoader {
   setState(UIStates state) {
     _element.classes.toggle('loading', state != UIStates.end);
     _text.text = _states[state];
+    // Force render wait.
+    return window.animationFrame;
   }
 }

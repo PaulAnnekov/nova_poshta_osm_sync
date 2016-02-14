@@ -124,7 +124,7 @@ onReady(_) async {
   await window.animationFrame;
   js.context['Leaflet'] = js.context['L'].callMethod('noConflict');
 
-  uiLoader.setState(UIStates.data);
+  await uiLoader.setState(UIStates.data);
   var response = await HttpRequest.getString('//localhost:8081/npm.json');
   npms = JSON.decode(response);
   response = await HttpRequest.getString('//localhost:8081/osmm.json');
@@ -132,7 +132,7 @@ onReady(_) async {
   response = await HttpRequest.getString('//localhost:8081/locations_cache.json');
   locationsProcessor = new LocationsProcessor(JSON.decode(response));
 
-  uiLoader.setState(UIStates.prepare);
+  await uiLoader.setState(UIStates.prepare);
   npms = npms.map((branch) {
     branch['tags'] = {
       'n': branch['n'],
@@ -144,9 +144,9 @@ onReady(_) async {
 
   MapWrapper map = new MapWrapper(locationsProcessor);
   determineOsmmsBranchId();
-  uiLoader.setState(UIStates.group);
+  await uiLoader.setState(UIStates.group);
   groupByPlace();
-  uiLoader.setState(UIStates.display);
+  await uiLoader.setState(UIStates.display);
   map.displayMarkers(osmms, MapWrapper.OSMM_COLOR, 'OSMMs');
   map.displayMarkers(npms, MapWrapper.NPM_COLOR, 'NPMs');
   map.initMap();
