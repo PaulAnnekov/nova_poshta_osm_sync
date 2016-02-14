@@ -21,6 +21,12 @@ determineOsmmsBranchId() {
   }).toList();
 }
 
+bool NPCityExists(LocationName city) {
+  if (city == null)
+    return false;
+  return npms.any((node) => new LocationName.fromNP(node['city']) == city);
+}
+
 int getOsmmBranchId(Map osmm) {
   int idFromBranch;
   int idFromName;
@@ -92,6 +98,7 @@ groupByPlace() {
       var location = locationsProcessor.getClosestLocationByPlace(npmCity,
           [node['lat'], node['lon']]);
       String oldId = groupParts.values.join(' ');
+      LocationName oldPlace = groupParts['place'];
       if (location == null) {
         log.fine("Can not find node's city in locations: $node");
         // Nomatim location has bad place name. We rename this place to NP's one. Fixes Лопатин case.
@@ -99,8 +106,9 @@ groupByPlace() {
       } else {
         groupParts = getGroupIdParts(location['address']);
       }
-      // Don't rename NP locations. They have higher priority. Fixes Требухів and Дударків case.
-      if (branchesProcessor.getGroup(oldId)['npms'].isEmpty) {
+      // Don't rename NP locations. They have higher priority. Fixes Требухів and Дударків/Угринів (Івано-Франківськ)
+      // cases.
+      if (!NPCityExists(oldPlace)) {
         var newId = groupParts.values.join(' ');
         branchesProcessor.renameGroup(oldId, newId);
       }
