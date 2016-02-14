@@ -60,6 +60,12 @@ class Polygon extends Path {
 
 @anonymous
 @JS()
+class Polyline extends Path {
+  external factory Polyline();
+}
+
+@anonymous
+@JS()
 class ControlLayers {
   external factory ControlLayers();
   external addTo(Map map);
@@ -103,6 +109,9 @@ external TileLayer tileLayer(String urlTemplate);
 
 @JS()
 external CircleMarker circleMarker(LatLng latlng, CircleMarkerPathOptions options);
+
+@JS()
+external Polyline polyline(List<LatLng> latlngs, [PathOptions options]);
 
 @JS()
 external Polygon polygon(List<LatLng> latlngs, [PathOptions options]);

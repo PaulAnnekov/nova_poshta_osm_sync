@@ -1,4 +1,5 @@
 import 'package:nova_poshta_osm_sync/leaflet/leaflet.dart' as L;
+import 'package:nova_poshta_osm_sync/turf/turf.dart' as turf;
 import 'package:nova_poshta_osm_sync/branches_processor.dart';
 import 'package:nova_poshta_osm_sync/location_processor.dart';
 
@@ -67,31 +68,42 @@ class MapWrapper {
     controlLayers.addOverlay(unitedGroup, '<span style="color: $JOIN_COLOR">United cities</span>');
   }
 
-  List<L.Path> _getCitiesPolygon(List nodes, String groupId, String color) {
+  bool _isPolygon(List<Map> nodes) {
+    var temp = [];
+    nodes.forEach((node) {
+      var isExist = temp.firstWhere((tempNode) => tempNode['lat'] == node['lat'] && tempNode['lon'] == node['lon'],
+          orElse: () => null);
+      if (isExist == null)
+        temp.add(node);
+    });
+    return temp.length > 2;
+  }
+
+  List<L.Path> _getCitiesPolygon(List<Map> nodes, String groupId, String color) {
     if (nodes.isEmpty)
       return [];
     List<L.Path> markers = [];
-    double minLat = 100.0, maxLat = -1.0, minLon = 100.0, maxLon = -1.0;
-    nodes.forEach((Map node) {
-      if (node['lat'] < minLat)
-        minLat = node['lat'];
-      if (node['lat'] > maxLat)
-        maxLat = node['lat'];
-      if (node['lon'] < minLon)
-        minLon = node['lon'];
-      if (node['lon'] > maxLon)
-        maxLon = node['lon'];
-    });
     L.Path marker;
     // If single branch in city - draw dot, not polygon. Polygon won't be rendered.
-    if (minLat == maxLat && minLon == maxLon) {
-      marker = L.circleMarker(L.latLng(minLat, maxLon),
-          new L.CircleMarkerPathOptions(color: color, fillOpacity: 1, radius: 2)).bindPopup(groupId);
+    if (!_isPolygon(nodes)) {
+      // Hack to make leaflet draw polyline for single point too.
+      nodes.add(nodes[0]);
+      List<L.LatLng> points = [];
+      nodes.forEach((Map node) => points.add(L.latLng(node['lat'], node['lon'])));
+      marker = L.polyline(points, new L.PathOptions(color: color)).bindPopup(groupId);
     } else {
-      marker = L.polygon([L.latLng(maxLat, minLon),
-      L.latLng(minLat, minLon), L.latLng(minLat, maxLon),
-      L.latLng(maxLat, maxLon)], new L.PathOptions(color: color))
-          .bindPopup(groupId);
+      List<turf.FeatureOptions> points = [];
+      nodes.forEach((Map node) {
+        points.add(new turf.FeatureOptions(
+          type: "Feature",
+          geometry: new turf.GeometryOptions(type: "Point", coordinates: [node['lat'], node['lon']])
+        ));
+      });
+      List<List<num>> polygonPoints = turf.convex(new turf.ConvexOptions(type: "FeatureCollection", features: points))
+          .geometry.coordinates.first;
+      List<L.LatLng> leafletPolygon = [];
+      polygonPoints.forEach((point) => leafletPolygon.add(L.latLng(point[0], point[1])));
+      marker = L.polygon(leafletPolygon, new L.PathOptions(color: color)).bindPopup(groupId);
       // TODO: fails in Chrome https://github.com/dart-lang/sdk/issues/25777
       marker.on('dblclick', (event) {
         marker.bringToBack();
