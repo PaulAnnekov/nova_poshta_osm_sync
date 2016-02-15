@@ -18,7 +18,7 @@ final UILoader uiLoader = new UILoader(querySelector('#loader'));
 
 determineOsmmsBranchId() {
   osmms = osmms.map((node) {
-    node['tags']['n'] = getOsmmBranchId(node) ?? 'unknown';
+    node['tags']['n'] = getOsmmBranchId(node) ?? null;
     return node;
   }).toList();
 }

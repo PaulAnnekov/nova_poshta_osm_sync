@@ -22,6 +22,20 @@ class Path {
 
 @anonymous
 @JS()
+class Marker {
+  external factory Marker();
+  external Marker addTo(LayerGroup layerGroup);
+  external Marker bindPopup(String text);
+}
+
+@anonymous
+@JS()
+class DivIcon {
+  external factory DivIcon();
+}
+
+@anonymous
+@JS()
 class TileLayer implements ILayer {
   external factory TileLayer();
 }
@@ -97,6 +111,18 @@ class PathOptions {
 
 @anonymous
 @JS()
+class MarkerOptions {
+  external factory MarkerOptions({DivIcon icon});
+}
+
+@anonymous
+@JS()
+class DivIconOptions {
+  external factory DivIconOptions({String className, String html});
+}
+
+@anonymous
+@JS()
 class CircleMarkerPathOptions extends PathOptions {
   external factory CircleMarkerPathOptions({String color, num fillOpacity, num radius});
 }
@@ -111,7 +137,13 @@ external TileLayer tileLayer(String urlTemplate);
 external CircleMarker circleMarker(LatLng latlng, CircleMarkerPathOptions options);
 
 @JS()
+external Marker marker(LatLng latlng, MarkerOptions options);
+
+@JS()
 external Polyline polyline(List<LatLng> latlngs, [PathOptions options]);
+
+@JS()
+external DivIcon divIcon([DivIconOptions options]);
 
 @JS()
 external Polygon polygon(List<LatLng> latlngs, [PathOptions options]);

@@ -43,8 +43,8 @@ class MapWrapper {
       address.forEach((key, value) {
         text += '<b>$key</b>: $value<br>';
       });
-      L.CircleMarker marker = L.circleMarker(L.latLng(node['lat'], node['lon']),
-          new L.PathOptions(color: color, fillOpacity: 0)).bindPopup(text);
+      L.Marker marker = L.marker(L.latLng(node['lat'], node['lon']), new L.MarkerOptions(icon: L.divIcon(
+          new L.DivIconOptions(html: node['tags']['n'] ?? 'u', className: color)))).bindPopup(text);
       marker.addTo(layerGroup);
     });
     controlLayers.addOverlay(layerGroup, '<span style="color: $color">$layerName</span>');

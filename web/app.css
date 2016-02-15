@@ -8,6 +8,22 @@ html, body {
     height: 100%;
 }
 
+#map .leaflet-marker-icon {
+    width: 25px !important;
+    height: 25px !important;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 26px;
+}
+
+#map .leaflet-marker-icon.red {
+    border: 2px solid red;
+}
+
+#map .leaflet-marker-icon.blue {
+    border: 2px solid blue;
+}
+
 #loader {
     display: none;
     position: absolute;
