@@ -30,30 +30,26 @@ bool NPCityExists(LocationName city) {
 }
 
 int getOsmmBranchId(Map osmm) {
-  int idFromBranch;
-  int idFromName;
   Map<String, String> tags = osmm['tags'];
   RegExp numberRegExp = new RegExp('([0-9]+)');
   RegExp cleanerRegExp = new RegExp('[0-9]+ {0,1}кг');
-  if (tags['branch'] != null)
-  {
-    String branch = tags['branch'].replaceAll(cleanerRegExp, '');
+  List<int> numbers = [];
+  ['branch', 'name', 'ref'].forEach((tag) {
+    if (tags[tag] == null)
+      return;
+    String branch = tags[tag].replaceAll(cleanerRegExp, '');
     var matches = numberRegExp.allMatches(branch);
     if (matches.length > 1)
-      log.warning("osmm $osmm 'branch' tag contains more then one numbers sequence");
-    if (matches.length)
-      idFromBranch = int.parse(matches.first.group(0));
-  }
-  String name = tags['name'].replaceAll(cleanerRegExp, '');
-  var matches = numberRegExp.allMatches(name);
-  if (matches.length > 1)
-    log.warning("osmm $osmm 'name' tag contains more then one numbers sequence");
-  if (matches.isNotEmpty)
-    idFromName = int.parse(matches.first.group(0));
-  if (idFromBranch != null && idFromName != null && idFromName != idFromBranch)
-    log.warning("id from 'name' tag is not equal to id from 'branch' tag for $osmm");
-
-  return idFromBranch != null ? idFromBranch : idFromName;
+      log.warning("osmm $osmm '$tag' tag contains more then one numbers sequence");
+    if (matches.isNotEmpty)
+      numbers.add(int.parse(matches.first.group(0)));
+  });
+  var isSame = numbers.every((number) {
+    return numbers[0] == number;
+  });
+  if (!isSame)
+    log.warning("numbers from tags are not equal for $osmm");
+  return numbers.isNotEmpty && isSame ? numbers[0] : null;
 }
 
 LinkedHashMap<String, LocationName> getGroupIdParts(Map address, [LocationName preferredCity]) {
