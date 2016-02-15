@@ -48,6 +48,12 @@ class LatLng {
 
 @anonymous
 @JS()
+class Point {
+  external factory Point();
+}
+
+@anonymous
+@JS()
 class LayerGroup implements ILayer {
   external factory LayerGroup();
   external LayerGroup addLayer(Polygon polygon);
@@ -118,7 +124,7 @@ class MarkerOptions {
 @anonymous
 @JS()
 class DivIconOptions {
-  external factory DivIconOptions({String className, String html});
+  external factory DivIconOptions({String className, String html, Point iconSize});
 }
 
 @anonymous
@@ -157,3 +163,6 @@ external ControlLayers controlLayers([baseLayers, overlays,
 
 @JS()
 external LatLng latLng(num lat, num lng);
+
+@JS()
+external Point point(num width, num height);

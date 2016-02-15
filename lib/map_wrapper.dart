@@ -45,7 +45,8 @@ class MapWrapper {
       });
       // Very sloooow, because uses div, but circleMarker does not support inner text.
       L.Marker marker = L.marker(L.latLng(node['lat'], node['lon']), new L.MarkerOptions(icon: L.divIcon(
-          new L.DivIconOptions(html: node['tags']['n'] ?? 'u', className: color)))).bindPopup(text);
+          new L.DivIconOptions(html: node['tags']['n'] ?? 'u', className: color, iconSize: L.point(25, 25)))))
+          .bindPopup(text);
       marker.addTo(layerGroup);
     });
     controlLayers.addOverlay(layerGroup, '<span style="color: $color">$layerName</span>');

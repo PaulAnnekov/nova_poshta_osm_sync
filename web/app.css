@@ -9,8 +9,6 @@ html, body {
 }
 
 #map .leaflet-marker-icon {
-    width: 25px !important;
-    height: 25px !important;
     border-radius: 50%;
     text-align: center;
     line-height: 26px;
