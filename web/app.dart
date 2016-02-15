@@ -75,7 +75,8 @@ LinkedHashMap<String, LocationName> getGroupIdParts(Map address, [LocationName p
   return nameParts;
 }
 
-groupByPlace() {
+groupByPlace() async {
+  await uiLoader.setState(UIStates.group, 'OSM');
   osmms.forEach((node) {
     Map address = locationsProcessor.getLocation(node['lat'],
         node['lon'])['address'];
@@ -86,7 +87,7 @@ groupByPlace() {
     }
     branchesProcessor.addOsmm(groupParts.values.join(' '), node);
   });
-
+  await uiLoader.setState(UIStates.group, 'NP');
   npms.forEach((node) {
     Map address = locationsProcessor.getLocation(node['lat'],
         node['lon'])['address'];
@@ -150,7 +151,7 @@ onReady(_) async {
   MapWrapper map = new MapWrapper(locationsProcessor);
   determineOsmmsBranchId();
   await uiLoader.setState(UIStates.group);
-  groupByPlace();
+  await groupByPlace();
   await uiLoader.setState(UIStates.display);
   map.displayMarkers(osmms, MapWrapper.OSMM_COLOR, 'OSMMs');
   map.displayMarkers(npms, MapWrapper.NPM_COLOR, 'NPMs');
