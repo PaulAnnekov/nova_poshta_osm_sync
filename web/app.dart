@@ -34,7 +34,7 @@ int getOsmmBranchId(Map osmm) {
   RegExp numberRegExp = new RegExp('([0-9]+)');
   RegExp cleanerRegExp = new RegExp('[0-9]+ {0,1}кг');
   List<int> numbers = [];
-  ['branch', 'name', 'ref'].forEach((tag) {
+  ['branch', 'name', 'ref', 'official_name'].forEach((tag) {
     if (tags[tag] == null)
       return;
     String branch = tags[tag].replaceAll(cleanerRegExp, '');
