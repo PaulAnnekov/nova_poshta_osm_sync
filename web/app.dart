@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'dart:collection';
 import 'dart:js' as js;
 import 'package:nova_poshta_osm_sync/location_processor.dart';
+import 'package:nova_poshta_osm_sync/lat_lng.dart';
 import 'package:nova_poshta_osm_sync/branches_processor.dart';
+import 'package:nova_poshta_osm_sync/locations_synchronizer.dart';
 import 'package:nova_poshta_osm_sync/map_wrapper.dart';
 import 'package:nova_poshta_osm_sync/location_name.dart';
 import 'package:nova_poshta_osm_sync/ui_loader.dart';
@@ -140,6 +142,7 @@ onReady(_) async {
 
   await uiLoader.setState(UIStates.prepare);
   npms = npms.map((branch) {
+    branch['loc'] = new LatLng(branch['lat'], branch['lon']);
     branch['tags'] = {
       'n': branch['n'],
       'addr': branch['addr'],
@@ -149,9 +152,12 @@ onReady(_) async {
   }).toList();
 
   MapWrapper map = new MapWrapper(locationsProcessor);
+  LocationsSynchronizer locationsSynchronizer = new LocationsSynchronizer(branchesProcessor);
   determineOsmmsBranchId();
   await uiLoader.setState(UIStates.group);
   await groupByPlace();
+  await uiLoader.setState(UIStates.sync);
+  locationsSynchronizer.sync();
   await uiLoader.setState(UIStates.display);
   map.displayMarkers(osmms, MapWrapper.OSMM_COLOR, 'OSMMs');
   map.displayMarkers(npms, MapWrapper.NPM_COLOR, 'NPMs');

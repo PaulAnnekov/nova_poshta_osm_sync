@@ -22,7 +22,7 @@ class LocationsProcessor {
       }, orElse: () => null) != null;
       if (!isMatch)
         continue;
-      double distance = _calculateDistance([latlon[0], latlon[1]],
+      double distance = calculateDistance([latlon[0], latlon[1]],
           [location['lat'], location['lon']]);
       if (distance > maxDistance)
         continue;
@@ -38,7 +38,10 @@ class LocationsProcessor {
     return _locations['$lat $lon'];
   }
 
-  double _calculateDistance(List<double> point1, List<double> point2) {
+  /**
+   * Calculates distance between two geographical coordinates in metres.
+   */
+  static double calculateDistance(List<double> point1, List<double> point2) {
     var R = 6371000; // metres
     var fi1 = _degreeToRadian(point1[0]);
     var fi2 = _degreeToRadian(point2[0]);
@@ -52,7 +55,7 @@ class LocationsProcessor {
     return R * c;
   }
 
-  double _degreeToRadian(double value) {
+  static double _degreeToRadian(double value) {
     return value * PI / 180;
   }
 }

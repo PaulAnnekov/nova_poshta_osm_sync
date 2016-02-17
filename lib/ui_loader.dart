@@ -5,6 +5,7 @@ enum UIStates {
   data,
   prepare,
   group,
+  sync,
   display,
   end
 }
@@ -17,6 +18,7 @@ class UILoader {
     UIStates.data: 'Getting data from server',
     UIStates.prepare: 'Preparing locations',
     UIStates.group: 'Groupping branches by cities',
+    UIStates.sync: 'Synchronizing OSM and NP branches',
     UIStates.display: 'Rendering',
     UIStates.end: 'Done'
   };
