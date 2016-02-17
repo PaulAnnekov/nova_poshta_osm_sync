@@ -48,7 +48,7 @@ class MapWrapper {
           .bindPopup(text);
       marker.addTo(layerGroup);
     });
-    controlLayers.addOverlay(layerGroup, '<span style="color: $color">$layerName</span>');
+    controlLayers.addOverlay(layerGroup, '<span style="color: $color">$layerName (${nodes.length})</span>');
     layerGroups.add(layerGroup);
   }
 
@@ -56,7 +56,11 @@ class MapWrapper {
     L.LayerGroup osmmGroup = L.layerGroup();
     L.LayerGroup npmGroup = L.layerGroup();
     L.LayerGroup unitedGroup = L.layerGroup();
+    int osmCities = 0, npCities = 0, unitedCities = 0;
     branchesProcessor.groupedBranches.forEach((id, Map nodes) {
+      osmCities += nodes['osmms'].isNotEmpty ? 1 : 0;
+      npCities += nodes['npms'].isNotEmpty ? 1 : 0;
+      unitedCities += nodes['osmms'].isNotEmpty || nodes['npms'].isNotEmpty ? 1 : 0;
       _getCitiesPolygon(nodes['osmms'], id, 'blue').forEach((marker)
       => marker.addTo(osmmGroup));
       _getCitiesPolygon(nodes['npms'], id, 'red').forEach((marker)
@@ -64,9 +68,9 @@ class MapWrapper {
       _getCitiesPolygon(new List.from(nodes['osmms'])..addAll(nodes['npms']),
           id, 'green').forEach((marker) => marker.addTo(unitedGroup));
     });
-    controlLayers.addOverlay(osmmGroup, '<span style="color: $OSMM_COLOR">OSM cities</span>');
-    controlLayers.addOverlay(npmGroup, '<span style="color: $NPM_COLOR">NP cities</span>');
-    controlLayers.addOverlay(unitedGroup, '<span style="color: $JOIN_COLOR">United cities</span>');
+    controlLayers.addOverlay(osmmGroup, '<span style="color: $OSMM_COLOR">OSM cities ($osmCities)</span>');
+    controlLayers.addOverlay(npmGroup, '<span style="color: $NPM_COLOR">NP cities ($npCities)</span>');
+    controlLayers.addOverlay(unitedGroup, '<span style="color: $JOIN_COLOR">United cities ($unitedCities)</span>');
   }
 
   bool _isPolygon(List<Branch> nodes) {
