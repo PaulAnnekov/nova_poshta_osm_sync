@@ -1,6 +1,7 @@
 import 'package:nova_poshta_osm_sync/leaflet/leaflet.dart' as L;
 import 'package:nova_poshta_osm_sync/turf/turf.dart' as turf;
 import 'package:nova_poshta_osm_sync/branches_processor.dart';
+import 'package:nova_poshta_osm_sync/branch.dart';
 import 'package:nova_poshta_osm_sync/location_processor.dart';
 
 class MapWrapper {
@@ -29,14 +30,12 @@ class MapWrapper {
     controlLayers.addTo(map);
   }
 
-  displayMarkers(List<Map> nodes, String color, String layerName) {
+  displayMarkers(List<Branch> nodes, String color, String layerName) {
     L.LayerGroup layerGroup = L.layerGroup();
     nodes.forEach((node) {
-      Map address = _locationsProcessor.getLocation(node['lat'],
-          node['lon'])['address'];
-      String text = '<b>lat</b>: ${node['lat']}<br>' +
-          '<b>lon</b>: ${node['lon']}<br>';
-      node['tags'].forEach((key, value) {
+      Map address = _locationsProcessor.getLocation(node.loc)['address'];
+      String text = '<b>loc</b>: ${node.loc}<br>';
+      node.customTags.forEach((key, value) {
         text += '<b>$key</b>: $value<br>';
       });
       text += '<br>';
@@ -44,8 +43,8 @@ class MapWrapper {
         text += '<b>$key</b>: $value<br>';
       });
       // Very sloooow, because uses div, but circleMarker does not support inner text.
-      L.Marker marker = L.marker(L.latLng(node['lat'], node['lon']), new L.MarkerOptions(icon: L.divIcon(
-          new L.DivIconOptions(html: node['tags']['n'] ?? 'u', className: color, iconSize: L.point(25, 25)))))
+      L.Marker marker = L.marker(node.loc.toLeaflet(), new L.MarkerOptions(icon: L.divIcon(
+          new L.DivIconOptions(html: node.number ?? 'u', className: color, iconSize: L.point(25, 25)))))
           .bindPopup(text);
       marker.addTo(layerGroup);
     });
@@ -70,18 +69,17 @@ class MapWrapper {
     controlLayers.addOverlay(unitedGroup, '<span style="color: $JOIN_COLOR">United cities</span>');
   }
 
-  bool _isPolygon(List<Map> nodes) {
-    var temp = [];
+  bool _isPolygon(List<Branch> nodes) {
+    List<Branch> temp = [];
     nodes.forEach((node) {
-      var isExist = temp.firstWhere((tempNode) => tempNode['lat'] == node['lat'] && tempNode['lon'] == node['lon'],
-          orElse: () => null);
+      var isExist = temp.firstWhere((tempNode) => tempNode.loc == node.loc, orElse: () => null);
       if (isExist == null)
         temp.add(node);
     });
     return temp.length > 2;
   }
 
-  List<L.Path> _getCitiesPolygon(List<Map> nodes, String groupId, String color) {
+  List<L.Path> _getCitiesPolygon(List<Branch> nodes, String groupId, String color) {
     if (nodes.isEmpty)
       return [];
     List<L.Path> markers = [];
@@ -91,14 +89,14 @@ class MapWrapper {
       // Hack to make leaflet draw polyline for single point too.
       nodes.add(nodes[0]);
       List<L.LatLng> points = [];
-      nodes.forEach((Map node) => points.add(L.latLng(node['lat'], node['lon'])));
+      nodes.forEach((node) => points.add(node.loc.toLeaflet()));
       marker = L.polyline(points, new L.PathOptions(color: color)).bindPopup(groupId);
     } else {
       List<turf.FeatureOptions> points = [];
-      nodes.forEach((Map node) {
+      nodes.forEach((node) {
         points.add(new turf.FeatureOptions(
           type: "Feature",
-          geometry: new turf.GeometryOptions(type: "Point", coordinates: [node['lat'], node['lon']])
+          geometry: new turf.GeometryOptions(type: "Point", coordinates: node.loc.toList())
         ));
       });
       List<List<num>> polygonPoints = turf.convex(new turf.ConvexOptions(type: "FeatureCollection", features: points))

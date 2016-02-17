@@ -1,16 +1,20 @@
 import 'dart:math';
 import 'package:nova_poshta_osm_sync/location_name.dart';
+import 'package:nova_poshta_osm_sync/lat_lon.dart';
 
 class LocationsProcessor {
   Map<String, Map> _locations;
   static List NAME_PRIORITY = ['village', 'town', 'city'];
 
   LocationsProcessor(Map<String, Map> locations) {
-    _locations = locations;
+    _locations = {};
+    locations.forEach((id, data) {
+      data['loc'] = new LatLon(data['lat'], data['lon']);
+      _locations[id] = data;
+    });
   }
 
-  Map getClosestLocationByPlace(LocationName place, List<double> latlon,
-      [num maxDistance = 20000]) {
+  Map getClosestLocationByPlace(LocationName place, LatLon from, [num maxDistance = 20000]) {
     Map closestLocation = null;
     double closestDistance = null;
     for (String i in _locations.keys) {
@@ -22,8 +26,7 @@ class LocationsProcessor {
       }, orElse: () => null) != null;
       if (!isMatch)
         continue;
-      double distance = calculateDistance([latlon[0], latlon[1]],
-          [location['lat'], location['lon']]);
+      double distance = calculateDistance(from, location['loc']);
       if (distance > maxDistance)
         continue;
       if (closestDistance == null || distance < closestDistance) {
@@ -34,19 +37,19 @@ class LocationsProcessor {
     return closestLocation;
   }
 
-  getLocation(double lat, double lon) {
-    return _locations['$lat $lon'];
+  getLocation(LatLon latLon) {
+    return _locations[latLon.toId()];
   }
 
   /**
    * Calculates distance between two geographical coordinates in metres.
    */
-  static double calculateDistance(List<double> point1, List<double> point2) {
+  static double calculateDistance(LatLon point1, LatLon point2) {
     var R = 6371000; // metres
-    var fi1 = _degreeToRadian(point1[0]);
-    var fi2 = _degreeToRadian(point2[0]);
-    var deltaFi = _degreeToRadian(point2[0] - point1[0]);
-    var deltaL = _degreeToRadian(point2[1] - point1[1]);
+    var fi1 = _degreeToRadian(point1.lat);
+    var fi2 = _degreeToRadian(point2.lat);
+    var deltaFi = _degreeToRadian(point2.lat - point1.lat);
+    var deltaL = _degreeToRadian(point2.lon - point1.lon);
 
     var a = sin(deltaFi / 2) * sin(deltaFi / 2) + cos(fi1) * cos(fi2) *
         sin(deltaL / 2) * sin(deltaL / 2);

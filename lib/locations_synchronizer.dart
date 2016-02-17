@@ -1,3 +1,5 @@
+import "package:nova_poshta_osm_sync/branch.dart";
+import "package:nova_poshta_osm_sync/lat_lon.dart";
 import "package:nova_poshta_osm_sync/branches_processor.dart";
 import "package:nova_poshta_osm_sync/location_processor.dart";
 
@@ -9,14 +11,14 @@ class LocationsSynchronizer {
     this._branchesProcessor.groupedBranches.forEach((groupId, branches) => _syncSingle(groupId, branches));
   }
 
-  _syncSingle(groupId, Map<String, List<Map>> branches) {
+  _syncSingle(groupId, Map<String, List<Branch>> branches) {
     List npmRemove = [];
     List osmRemove = [];
     branches['npms'].forEach((npm) {
-      var osmm = _getBranchByNumber(branches['osmms'], npm['tags']['n']);
+      var osmm = _getBranchByNumber(branches['osmms'], npm.number);
       if (osmm == null)
         return;
-      if (_isNear([npm['lat'], npm['lon']], [osmm['lat'], osmm['lon']])) {
+      if (_isNear(npm.loc, osmm.loc)) {
         npmRemove.add(npm);
         osmRemove.add(osmm);
       }
@@ -29,15 +31,15 @@ class LocationsSynchronizer {
     });
   }
 
-  _isNear(List<double> point1, List<double> point2, [num max = 100]) {
+  _isNear(LatLon point1, LatLon point2, [num max = 100]) {
     return LocationsProcessor.calculateDistance(point1, point2) <= max;
   }
 
-  _getBranchByNumber(List<Map> branches, String number) {
-    return branches.firstWhere((Map branch) {
-      if (branch['tags']['n'] == null)
+  _getBranchByNumber(List<Branch> branches, int number) {
+    return branches.firstWhere((Branch branch) {
+      if (branch.number == null)
         return false;
-      return n == number;
+      return branch.number == number;
     }, orElse: () => null);
   }
 }

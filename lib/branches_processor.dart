@@ -1,11 +1,15 @@
-class BranchesProcessor {
-  Map<String, Map<String, List>> groupedBranches = {};
+import "package:nova_poshta_osm_sync/branch.dart";
+import "package:nova_poshta_osm_sync/osm_branch.dart";
+import "package:nova_poshta_osm_sync/np_branch.dart";
 
-  _add(String groupId, Map marker, String group) {
+class BranchesProcessor {
+  Map<String, Map<String, List<Branch>>> groupedBranches = {};
+
+  _add(String groupId, Branch branch, String group) {
     groupId = groupId.toLowerCase();
     if (!groupedBranches.containsKey(groupId))
       groupedBranches[groupId] = {'osmms': [], 'npms': []};
-    groupedBranches[groupId][group].add(marker);
+    groupedBranches[groupId][group].add(branch);
   }
 
   renameGroup(String oldId, String newId) {
@@ -17,11 +21,11 @@ class BranchesProcessor {
     groupedBranches.remove(oldId);
   }
 
-  addOsmm(String groupId, Map osmm) {
+  addOsmm(String groupId, OsmBranch osmm) {
     _add(groupId, osmm, 'osmms');
   }
 
-  addNpm(String groupId, Map npm) {
+  addNpm(String groupId, NpBranch npm) {
     _add(groupId, npm, 'npms');
   }
 

@@ -3,55 +3,27 @@ import 'dart:convert';
 import 'dart:collection';
 import 'dart:js' as js;
 import 'package:nova_poshta_osm_sync/location_processor.dart';
-import 'package:nova_poshta_osm_sync/lat_lng.dart';
+import 'package:nova_poshta_osm_sync/lat_lon.dart';
 import 'package:nova_poshta_osm_sync/branches_processor.dart';
 import 'package:nova_poshta_osm_sync/locations_synchronizer.dart';
 import 'package:nova_poshta_osm_sync/map_wrapper.dart';
 import 'package:nova_poshta_osm_sync/location_name.dart';
 import 'package:nova_poshta_osm_sync/ui_loader.dart';
+import 'package:nova_poshta_osm_sync/osm_branch.dart';
+import 'package:nova_poshta_osm_sync/np_branch.dart';
 import 'package:logging/logging.dart';
 
-List<Map> npms;
-List<Map> osmms;
+List<NpBranch> npms = [];
+List<OsmBranch> osmms = [];
 LocationsProcessor locationsProcessor;
 final Logger log = new Logger('main');
 final BranchesProcessor branchesProcessor = new BranchesProcessor();
 final UILoader uiLoader = new UILoader(querySelector('#loader'));
 
-determineOsmmsBranchId() {
-  osmms = osmms.map((node) {
-    node['tags']['n'] = getOsmmBranchId(node) ?? null;
-    return node;
-  }).toList();
-}
-
 bool NPCityExists(LocationName city) {
   if (city == null)
     return false;
-  return npms.any((node) => new LocationName.fromNP(node['city']) == city);
-}
-
-int getOsmmBranchId(Map osmm) {
-  Map<String, String> tags = osmm['tags'];
-  RegExp numberRegExp = new RegExp('([0-9]+)');
-  RegExp cleanerRegExp = new RegExp('[0-9]+ {0,1}кг');
-  List<int> numbers = [];
-  ['branch', 'name', 'ref', 'official_name'].forEach((tag) {
-    if (tags[tag] == null)
-      return;
-    String branch = tags[tag].replaceAll(cleanerRegExp, '');
-    var matches = numberRegExp.allMatches(branch);
-    if (matches.length > 1)
-      log.warning("osmm $osmm '$tag' tag contains more then one numbers sequence");
-    if (matches.isNotEmpty)
-      numbers.add(int.parse(matches.first.group(0)));
-  });
-  var isSame = numbers.every((number) {
-    return numbers[0] == number;
-  });
-  if (!isSame)
-    log.warning("numbers from tags are not equal for $osmm");
-  return numbers.isNotEmpty && isSame ? numbers[0] : null;
+  return npms.any((node) => node.city == city);
 }
 
 LinkedHashMap<String, LocationName> getGroupIdParts(Map address, [LocationName preferredCity]) {
@@ -80,8 +52,7 @@ LinkedHashMap<String, LocationName> getGroupIdParts(Map address, [LocationName p
 groupByPlace() async {
   await uiLoader.setState(UIStates.group, 'OSM');
   osmms.forEach((node) {
-    Map address = locationsProcessor.getLocation(node['lat'],
-        node['lon'])['address'];
+    Map address = locationsProcessor.getLocation(node.loc)['address'];
     var groupParts = getGroupIdParts(address);
     if (groupParts['place'] == null) {
       log.info('Can not find place tag for: $node ($address)');
@@ -91,12 +62,10 @@ groupByPlace() async {
   });
   await uiLoader.setState(UIStates.group, 'NP');
   npms.forEach((node) {
-    Map address = locationsProcessor.getLocation(node['lat'],
-        node['lon'])['address'];
-    var npmCity = new LocationName.fromNP(node['city']);
-    var groupParts = getGroupIdParts(address, npmCity);
+    Map address = locationsProcessor.getLocation(node.loc)['address'];
+    var groupParts = getGroupIdParts(address, node.city);
     var isSearch = false;
-    if (groupParts['place'] != null && groupParts['place'] != npmCity) {
+    if (groupParts['place'] != null && groupParts['place'] != node.city) {
       log.fine('NP city and Nomatim city differs for: $node ($address)');
       isSearch = true;
     }
@@ -105,14 +74,13 @@ groupByPlace() async {
       isSearch = true;
     }
     if (isSearch) {
-      var location = locationsProcessor.getClosestLocationByPlace(npmCity,
-          [node['lat'], node['lon']]);
+      var location = locationsProcessor.getClosestLocationByPlace(node.city, node.loc);
       String oldId = groupParts.values.join(' ');
       LocationName oldPlace = groupParts['place'];
       if (location == null) {
         log.fine("Can not find node's city in locations: $node");
         // Nomatim location has bad place name. We rename this place to NP's one. Fixes Лопатин case.
-        groupParts['place'] = npmCity;
+        groupParts['place'] = node.city;
       } else {
         groupParts = getGroupIdParts(location['address']);
       }
@@ -134,26 +102,33 @@ onReady(_) async {
 
   await uiLoader.setState(UIStates.data);
   var response = await HttpRequest.getString('//localhost:8081/npm.json');
-  npms = JSON.decode(response);
+  var jsonNpms = JSON.decode(response);
   response = await HttpRequest.getString('//localhost:8081/osmm.json');
-  osmms = JSON.decode(response)['elements'];
+  var jsonOsmms = JSON.decode(response)['elements'];
   response = await HttpRequest.getString('//localhost:8081/locations_cache.json');
   locationsProcessor = new LocationsProcessor(JSON.decode(response));
 
   await uiLoader.setState(UIStates.prepare);
-  npms = npms.map((branch) {
-    branch['loc'] = new LatLng(branch['lat'], branch['lon']);
-    branch['tags'] = {
-      'n': branch['n'],
-      'addr': branch['addr'],
-      'city': branch['city'],
-    };
-    return branch;
-  }).toList();
+  jsonNpms.forEach((node) {
+    NpBranch branch = new NpBranch(
+      new LatLon(node['lat'], node['lon']),
+      {'addr': node['addr']},
+      new LocationName.fromNP(node['city']),
+      node['n']
+    );
+    npms.add(branch);
+  });
+
+  jsonOsmms.forEach((node) {
+    OsmBranch branch = new OsmBranch(
+        new LatLon(node['lat'], node['lon']),
+        node['tags']
+    );
+    osmms.add(branch);
+  });
 
   MapWrapper map = new MapWrapper(locationsProcessor);
   LocationsSynchronizer locationsSynchronizer = new LocationsSynchronizer(branchesProcessor);
-  determineOsmmsBranchId();
   await uiLoader.setState(UIStates.group);
   await groupByPlace();
   await uiLoader.setState(UIStates.sync);
