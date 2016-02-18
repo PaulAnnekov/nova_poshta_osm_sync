@@ -15,11 +15,31 @@ class LocationsSynchronizer {
 
   _syncSingle(Map<String, List<Branch>> branches) {
     _mergeNear(branches);
+    _mergeNearDifferentNumbers(branches);
     return _results;
   }
 
   _isMerged(Branch branch) {
     return _results.any((result) => result['from'] == branch || result['result'] == branch);
+  }
+
+  /**
+   * Merge an NP and OSM branch with different numbers and a distance of less than 100 meters.
+   */
+  _mergeNearDifferentNumbers(Map<String, List<Branch>> branches) {
+    branches['npms'].forEach((npm) {
+      if (_isMerged(npm))
+        return;
+      for (var osmm in branches['osmms']) {
+        if (!_isMerged(osmm) && _isNear(npm.loc, osmm.loc)) {
+          _results.add({
+            'result': osmm,
+            'from': npm
+          });
+          return;
+        }
+      }
+    });
   }
 
   /**
