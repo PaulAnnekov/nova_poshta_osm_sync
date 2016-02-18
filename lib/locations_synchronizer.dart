@@ -5,44 +5,49 @@ import "package:nova_poshta_osm_sync/location_processor.dart";
 
 class LocationsSynchronizer {
   BranchesProcessor _branchesProcessor;
+  List<Map<String, Branch>> _results = [];
   LocationsSynchronizer(this._branchesProcessor);
 
   List<Map<String, Branch>> sync() {
-    List<Map<String, Branch>> results = [];
-    this._branchesProcessor.groupedBranches.forEach((groupId, branches) {
-      results.addAll(_syncSingle(groupId, branches));
-    });
-
-    return results;
+    this._branchesProcessor.groupedBranches.forEach((groupId, branches) => _syncSingle(branches));
+    return _results;
   }
 
-  List<Map<String, Branch>> _syncSingle(groupId, Map<String, List<Branch>> branches) {
-    List<Map<String, Branch>> results = [];
+  _syncSingle(Map<String, List<Branch>> branches) {
+    _checkNear(branches);
+    return _results;
+  }
+
+  _isMerged(Branch branch) {
+    return _results.any((result) => result['from'] == branch || result['result'] == branch);
+  }
+
+  _checkNear(Map<String, List<Branch>> branches) {
     branches['npms'].forEach((npm) {
+      if (_isMerged(npm))
+        return;
       var osmm = _getBranchByNumber(branches['osmms'], npm.number);
-      if (osmm == -1)
-        return false;
-      if (_isNear(npm.loc, branches['osmms'][osmm].loc)) {
-        results.add({
-          'result': branches['osmms'][osmm],
+      if (osmm == null)
+        return;
+      if (_isNear(npm.loc, osmm.loc)) {
+        _results.add({
+          'result': osmm,
           'from': npm
         });
       }
     });
-
-    return results;
   }
 
   _isNear(LatLon point1, LatLon point2, [num max = 100]) {
     return LocationsProcessor.calculateDistance(point1, point2) <= max;
   }
 
-  int _getBranchByNumber(List<Branch> branches, int number) {
+  Branch _getBranchByNumber(List<Branch> branches, int number) {
     var branch = branches.firstWhere((Branch branch) {
       if (branch.number == null)
         return false;
       return branch.number == number;
     }, orElse: () => null);
-    return branches.indexOf(branch);
+    return branch;
   }
 }
