@@ -14,7 +14,7 @@ class LocationsSynchronizer {
   }
 
   _syncSingle(Map<String, List<Branch>> branches) {
-    _checkNear(branches);
+    _mergeNear(branches);
     return _results;
   }
 
@@ -22,7 +22,10 @@ class LocationsSynchronizer {
     return _results.any((result) => result['from'] == branch || result['result'] == branch);
   }
 
-  _checkNear(Map<String, List<Branch>> branches) {
+  /**
+   * Merge an NP and OSM branch with the same number and a distance of less than 100 meters.
+   */
+  _mergeNear(Map<String, List<Branch>> branches) {
     branches['npms'].forEach((npm) {
       if (_isMerged(npm))
         return;
