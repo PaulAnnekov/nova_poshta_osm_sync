@@ -7,39 +7,42 @@ class LocationsSynchronizer {
   BranchesProcessor _branchesProcessor;
   LocationsSynchronizer(this._branchesProcessor);
 
-  sync() {
-    this._branchesProcessor.groupedBranches.forEach((groupId, branches) => _syncSingle(groupId, branches));
+  List<Map<String, Branch>> sync() {
+    List<Map<String, Branch>> results = [];
+    this._branchesProcessor.groupedBranches.forEach((groupId, branches) {
+      results.addAll(_syncSingle(groupId, branches));
+    });
+
+    return results;
   }
 
-  _syncSingle(groupId, Map<String, List<Branch>> branches) {
-    List npmRemove = [];
-    List osmRemove = [];
+  List<Map<String, Branch>> _syncSingle(groupId, Map<String, List<Branch>> branches) {
+    List<Map<String, Branch>> results = [];
     branches['npms'].forEach((npm) {
       var osmm = _getBranchByNumber(branches['osmms'], npm.number);
-      if (osmm == null)
-        return;
-      if (_isNear(npm.loc, osmm.loc)) {
-        npmRemove.add(npm);
-        osmRemove.add(osmm);
+      if (osmm == -1)
+        return false;
+      if (_isNear(npm.loc, branches['osmms'][osmm].loc)) {
+        results.add({
+          'result': branches['osmms'][osmm],
+          'from': npm
+        });
       }
     });
-    npmRemove.forEach((branch) {
-      this._branchesProcessor.groupedBranches[groupId]['npms'].remove(branch);
-    });
-    osmRemove.forEach((branch) {
-      this._branchesProcessor.groupedBranches[groupId]['osmms'].remove(branch);
-    });
+
+    return results;
   }
 
   _isNear(LatLon point1, LatLon point2, [num max = 100]) {
     return LocationsProcessor.calculateDistance(point1, point2) <= max;
   }
 
-  _getBranchByNumber(List<Branch> branches, int number) {
-    return branches.firstWhere((Branch branch) {
+  int _getBranchByNumber(List<Branch> branches, int number) {
+    var branch = branches.firstWhere((Branch branch) {
       if (branch.number == null)
         return false;
       return branch.number == number;
     }, orElse: () => null);
+    return branches.indexOf(branch);
   }
 }

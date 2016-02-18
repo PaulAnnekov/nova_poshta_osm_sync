@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:html';
 import 'dart:convert';
 import 'dart:collection';
@@ -11,6 +12,7 @@ import 'package:nova_poshta_osm_sync/location_name.dart';
 import 'package:nova_poshta_osm_sync/ui_loader.dart';
 import 'package:nova_poshta_osm_sync/osm_branch.dart';
 import 'package:nova_poshta_osm_sync/np_branch.dart';
+import 'package:nova_poshta_osm_sync/branch.dart';
 import 'package:logging/logging.dart';
 
 List<NpBranch> npms = [];
@@ -96,10 +98,10 @@ groupByPlace() async {
 }
 
 onReady(_) async {
-  uiLoader.setState(UIStates.init);
   await window.animationFrame;
-  js.context['Leaflet'] = js.context['L'].callMethod('noConflict');
+  js.context['Leaflet'] = js.context['L'];
 
+  uiLoader.setState(UIStates.init);
   await uiLoader.setState(UIStates.data);
   var response = await HttpRequest.getString('//localhost:8081/npm.json');
   var jsonNpms = JSON.decode(response);
@@ -132,10 +134,11 @@ onReady(_) async {
   await uiLoader.setState(UIStates.group);
   await groupByPlace();
   await uiLoader.setState(UIStates.sync);
-  locationsSynchronizer.sync();
+  List<Map<String, Branch>> results = locationsSynchronizer.sync();
   await uiLoader.setState(UIStates.display);
   map.displayMarkers(osmms, MapWrapper.OSMM_COLOR, 'OSMMs');
   map.displayMarkers(npms, MapWrapper.NPM_COLOR, 'NPMs');
+  map.displayResults(results);
   map.initMap();
   map.displayCities(branchesProcessor);
   uiLoader.setState(UIStates.end);
@@ -149,7 +152,12 @@ main() async {
   // Workaround for https://github.com/dart-lang/sdk/issues/25318#issuecomment-167682786
   var leaflet = new ScriptElement()..src =
       'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet-src.js';
-  leaflet.onLoad.listen(onReady);
+  leaflet.onLoad.listen((_) {
+    var polylineDecorator = new ScriptElement()..src =
+        'https://rawgit.com/bbecquet/Leaflet.PolylineDecorator/leaflet-0.7.2/leaflet.polylineDecorator.js';
+    polylineDecorator.onLoad.listen(onReady);
+    document.body.append(polylineDecorator);
+  });
   document.body.append(leaflet);
 }
 

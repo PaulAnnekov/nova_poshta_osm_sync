@@ -52,6 +52,21 @@ class MapWrapper {
     layerGroups.add(layerGroup);
   }
 
+  displayResults(List<Map<String, Branch>> results) {
+    L.LayerGroup layerGroup = L.layerGroup();
+    results.forEach((result) {
+      var polyline = L.polyline([result['from'].loc.toLeaflet(), result['result'].loc.toLeaflet()],
+          new L.PathOptions(color: 'green'));
+      var polylineDecorator = L.polylineDecorator(polyline, new L.PolylineDecoratorOptions(patterns:
+        [new L.Pattern(repeat: 0, offset: '100%', symbol: L.arrowHead(new L.SymbolArrowHeadOptions(pixelSize: 15,
+        pathOptions: new L.PathOptions(color: 'green', fillOpacity: 0.5), polygon: false)))]));
+      polyline.addTo(layerGroup);
+      polylineDecorator.addTo(layerGroup);
+    });
+    controlLayers.addOverlay(layerGroup, '<span style="color: green">Merges (${results.length})</span>');
+    layerGroups.add(layerGroup);
+  }
+
   displayCities(BranchesProcessor branchesProcessor) {
     L.LayerGroup osmmGroup = L.layerGroup();
     L.LayerGroup npmGroup = L.layerGroup();
