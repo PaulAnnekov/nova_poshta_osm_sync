@@ -55,12 +55,14 @@ class MapWrapper {
   displayResults(List<Map<String, Branch>> results) {
     L.LayerGroup layerGroup = L.layerGroup();
     results.forEach((result) {
+      if (result['from'] == result['result'])
+        return;
       var polyline = L.polyline([result['from'].loc.toLeaflet(), result['result'].loc.toLeaflet()],
           new L.PathOptions(color: 'green'));
+      polyline.addTo(layerGroup);
       var polylineDecorator = L.polylineDecorator(polyline, new L.PolylineDecoratorOptions(patterns:
         [new L.Pattern(repeat: 0, offset: '100%', symbol: L.arrowHead(new L.SymbolArrowHeadOptions(pixelSize: 15,
         pathOptions: new L.PathOptions(color: 'green', fillOpacity: 0.5), polygon: false)))]));
-      polyline.addTo(layerGroup);
       polylineDecorator.addTo(layerGroup);
     });
     controlLayers.addOverlay(layerGroup, '<span style="color: green">Merges (${results.length})</span>');
