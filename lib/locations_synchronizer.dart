@@ -18,6 +18,7 @@ class LocationsSynchronizer {
     _mergeNear(branches);
     _mergeNearDifferentNumbers(branches);
     _mergeNearHouseNumber(branches);
+    _mergeNpNoMatch(branches);
     return _results;
   }
 
@@ -32,6 +33,24 @@ class LocationsSynchronizer {
     branches['npms'].forEach((npm) {
       if (_isMerged(npm) || branches['osmms'].isNotEmpty)
         return;
+      _results.add({
+        'result': npm,
+        'from': npm
+      });
+    });
+  }
+
+  /**
+   * Merge an NP with no OSM match.
+   */
+  _mergeNpNoMatch(Map<String, List<Branch>> branches) {
+    branches['npms'].forEach((npm) {
+      if (_isMerged(npm))
+        return;
+      for (var osmm in branches['osmms']) {
+        if (!_isMerged(osmm) && osmm.number == npm.number)
+          return;
+      }
       _results.add({
         'result': npm,
         'from': npm
