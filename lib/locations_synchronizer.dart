@@ -46,7 +46,7 @@ class LocationsSynchronizer {
       if (_isMerged(npm))
         return;
       for (var osmm in branches['osmms']) {
-        if (!_isMerged(osmm) && _isNear(npm.loc, osmm.loc)) {
+        if (!_isMerged(osmm) && _isNear(npm.loc, osmm.loc, 100)) {
           _results.add({
             'result': osmm,
             'from': npm
@@ -58,7 +58,7 @@ class LocationsSynchronizer {
   }
 
   /**
-   * Merge an NP and OSM branch with the same number and a distance of less than 100 meters.
+   * Merge an NP and OSM branch with the same number and a distance of less than 300 meters.
    */
   _mergeNear(Map<String, List<Branch>> branches) {
     branches['npms'].forEach((npm) {
@@ -67,7 +67,7 @@ class LocationsSynchronizer {
       var osmm = _getBranchByNumber(branches['osmms'], npm.number);
       if (osmm == null)
         return;
-      if (_isNear(npm.loc, osmm.loc)) {
+      if (_isNear(npm.loc, osmm.loc, 300)) {
         _results.add({
           'result': osmm,
           'from': npm
@@ -76,7 +76,7 @@ class LocationsSynchronizer {
     });
   }
 
-  _isNear(LatLon point1, LatLon point2, [num max = 100]) {
+  _isNear(LatLon point1, LatLon point2, num max) {
     return LocationsProcessor.calculateDistance(point1, point2) <= max;
   }
 
