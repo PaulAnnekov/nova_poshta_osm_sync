@@ -114,7 +114,7 @@ onReady(_) async {
   jsonNpms.forEach((node) {
     NpBranch branch = new NpBranch(
       new LatLon(node['lat'], node['lon']),
-      {'addr': node['addr']},
+      {'addr': node['addr'], 'city': node['city']},
       new LocationName.fromNP(node['city']),
       node['n']
     );
