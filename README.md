@@ -6,7 +6,7 @@ Put Nova Poshta's markers to `data/npm.json`. Format:
 
 ```
 [{
-  "n": "1", // branch number in city
+  "n": 1, // branch number in city
   "lon": 36.938391476870000,
   "lat": 50.295151744070000,
   "addr": "Відділення №1: вул. Дзержинського, 17",
@@ -38,6 +38,8 @@ You can get them from http://overpass-turbo.eu/ using:
 (
   node["name"~"Нова Пошта"];
   node["name"~"Новая Почта"];
+  node["operator"~"Новая Почта"];
+  node["operator"~"Нова Пошта"];
 );
 out body;
 ```
