@@ -17,6 +17,7 @@ class LocationsSynchronizer {
     _mergeSingle(branches);
     _mergeNear(branches);
     _mergeNearDifferentNumbers(branches);
+    _mergeNearHouseNumber(branches);
     return _results;
   }
 
@@ -35,6 +36,27 @@ class LocationsSynchronizer {
         'result': npm,
         'from': npm
       });
+    });
+  }
+
+  /**
+   * Merge an NP and OSM branch with the same house number and a distance of less than 300 meters.
+   */
+  _mergeNearHouseNumber(Map<String, List<Branch>> branches) {
+    branches['npms'].forEach((npm) {
+      if (_isMerged(npm))
+        return;
+      for (var osmm in branches['osmms']) {
+        if (!_isMerged(osmm) && _isNear(npm.loc, osmm.loc, 300) && npm.customTags['house_number'] ==
+            osmm.customTags['house_number'])
+        {
+          _results.add({
+            'result': osmm,
+            'from': npm
+          });
+          return;
+        }
+      }
     });
   }
 
