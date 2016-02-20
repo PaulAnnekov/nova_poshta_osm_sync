@@ -25,7 +25,7 @@ class LocationsSynchronizer {
   }
 
   /**
-   * Merge an NP and OSM branch with different numbers and a distance of less than 100 meters.
+   * Merge an NP single in a city.
    */
   _mergeSingle(Map<String, List<Branch>> branches) {
     branches['npms'].forEach((npm) {
