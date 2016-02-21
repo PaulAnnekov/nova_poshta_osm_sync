@@ -19,11 +19,22 @@ class LocationsSynchronizer {
     _mergeNearDifferentNumbers(branches);
     _mergeNearHouseNumber(branches);
     _mergeNpNoMatch(branches);
+    _mergeByRoadAndHouse(branches);
     return _results;
   }
 
   _isMerged(Branch branch) {
     return _results.any((result) => result['from'] == branch || result['result'] == branch);
+  }
+
+  /**
+   * Merge an NP and OSM branch with the same number into branch that has the same house_number + road as in NP address.
+   */
+  _mergeByRoadAndHouse(Map<String, List<Branch>> branches) {
+    branches['npms'].forEach((npm) {
+      if (_isMerged(npm))
+        return;
+    });
   }
 
   /**
