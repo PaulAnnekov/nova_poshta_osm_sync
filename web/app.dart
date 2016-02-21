@@ -140,6 +140,7 @@ onReady(_) async {
   map.displayMarkers(npms, MapWrapper.NPM_COLOR, 'NPMs');
   map.displayResults(results);
   map.initMap();
+  map.displayUnmerged(branchesProcessor, results);
   map.displayCities(branchesProcessor);
   uiLoader.setState(UIStates.end);
 }

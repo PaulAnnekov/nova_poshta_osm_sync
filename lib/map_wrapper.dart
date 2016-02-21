@@ -69,6 +69,29 @@ class MapWrapper {
     layerGroups.add(layerGroup);
   }
 
+  displayUnmerged(BranchesProcessor branchesProcessor, List<Map<String, Branch>> results) {
+    List<Branch> unmergedOsm = [];
+    List<Branch> unmergedNp = [];
+    branchesProcessor.groupedBranches.forEach((groupId, branches) {
+      branches['osmms'].forEach((branch) {
+        for (var merge in results) {
+          if (merge['from'] == branch || merge['result'] == branch)
+            return;
+        }
+        unmergedOsm.add(branch);
+      });
+      branches['npms'].forEach((branch) {
+        for (var merge in results) {
+          if (merge['from'] == branch || merge['result'] == branch)
+            return;
+        }
+        unmergedNp.add(branch);
+      });
+    });
+    displayMarkers(unmergedOsm, 'blue', 'Unmerged OSM');
+    displayMarkers(unmergedNp, 'red', 'Unmerged NP');
+  }
+
   displayCities(BranchesProcessor branchesProcessor) {
     L.LayerGroup osmmGroup = L.layerGroup();
     L.LayerGroup npmGroup = L.layerGroup();
