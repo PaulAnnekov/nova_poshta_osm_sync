@@ -1,4 +1,4 @@
-import 'dart:async';
+/*import 'dart:async';
 import 'dart:html';
 import 'dart:convert';
 import 'dart:collection';
@@ -9,13 +9,13 @@ import 'package:nova_poshta_osm_sync/branches_processor.dart';
 import 'package:nova_poshta_osm_sync/locations_synchronizer.dart';
 import 'package:nova_poshta_osm_sync/map_wrapper.dart';
 import 'package:nova_poshta_osm_sync/location_name.dart';
-import 'package:nova_poshta_osm_sync/ui_loader.ts';
+import 'package:nova_poshta_osm_sync/ui_loader.dart';
 import 'package:nova_poshta_osm_sync/osm_branch.dart';
 import 'package:nova_poshta_osm_sync/np_branch.dart';
 import 'package:nova_poshta_osm_sync/branch.dart';
-import 'package:logging/logging.dart';
+import 'package:logging/logging.dart';*/
 
-List<NpBranch> npms = [];
+/*List<NpBranch> npms = [];
 List<OsmBranch> osmms = [];
 LocationsProcessor locationsProcessor;
 final Logger log = new Logger('main');
@@ -95,70 +95,54 @@ groupByPlace() async {
     }
     branchesProcessor.addNpm(groupParts.values.join(' '), node);
   });
-}
+}*/
 
-onReady(_) async {
-  await window.animationFrame;
-  js.context['Leaflet'] = js.context['L'];
-
-  uiLoader.setState(UIStates.init);
-  await uiLoader.setState(UIStates.data);
-  var response = await HttpRequest.getString('//localhost:8081/npm.json');
-  var jsonNpms = JSON.decode(response);
-  response = await HttpRequest.getString('//localhost:8081/osmm.json');
-  var jsonOsmms = JSON.decode(response)['elements'];
-  response = await HttpRequest.getString('//localhost:8081/locations_cache.json');
-  locationsProcessor = new LocationsProcessor(JSON.decode(response));
-
-  await uiLoader.setState(UIStates.prepare);
-  jsonNpms.forEach((node) {
-    NpBranch branch = new NpBranch(
-      new LatLon(node['lat'], node['lon']),
-      {'addr': node['addr'], 'city': node['city']},
-      new LocationName.fromNP(node['city']),
-      node['n']
-    );
-    npms.add(branch);
-  });
-
-  jsonOsmms.forEach((node) {
-    OsmBranch branch = new OsmBranch(
-        new LatLon(node['lat'], node['lon']),
-        node['tags']
-    );
-    osmms.add(branch);
-  });
-
-  MapWrapper map = new MapWrapper(locationsProcessor);
-  LocationsSynchronizer locationsSynchronizer = new LocationsSynchronizer(branchesProcessor);
-  await uiLoader.setState(UIStates.group);
-  await groupByPlace();
-  await uiLoader.setState(UIStates.sync);
-  List<Map<String, Branch>> results = locationsSynchronizer.sync();
-  await uiLoader.setState(UIStates.display);
-  map.displayMarkers(osmms, MapWrapper.OSMM_COLOR, 'OSMMs');
-  map.displayMarkers(npms, MapWrapper.NPM_COLOR, 'NPMs');
-  map.displayResults(results);
-  map.initMap();
-  map.displayUnmerged(branchesProcessor, results);
-  map.displayCities(branchesProcessor);
-  uiLoader.setState(UIStates.end);
-}
-
-main() async {
-  Logger.root.level = Level.INFO;
+async function main() {
+  /*Logger.root.level = Level.INFO;
   Logger.root.onRecord.listen((LogRecord rec) {
-    print('${rec.level.name}: ${rec.time}: ${rec.message}');
-  });
-  // Workaround for https://github.com/dart-lang/sdk/issues/25318#issuecomment-167682786
-  var leaflet = new ScriptElement()..src =
-      'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet-src.js';
-  leaflet.onLoad.listen((_) {
-    var polylineDecorator = new ScriptElement()..src =
-        'https://rawgit.com/bbecquet/Leaflet.PolylineDecorator/leaflet-0.7.2/leaflet.polylineDecorator.js';
-    polylineDecorator.onLoad.listen(onReady);
-    document.body.append(polylineDecorator);
-  });
-  document.body.append(leaflet);
+  print('${rec.level.name}: ${rec.time}: ${rec.message}');
+  });*/
+  //uiLoader.setState(UIStates.init);
+  //await uiLoader.setState(UIStates.data);
+  //var response = await HttpRequest.getString('//localhost:8081/npm.json');
+  //var jsonNpms = JSON.decode(response);
+  //response = await HttpRequest.getString('//localhost:8081/osmm.json');
+  //var jsonOsmms = JSON.decode(response)['elements'];
+  //response = await HttpRequest.getString('//localhost:8081/locations_cache.json');
+  //locationsProcessor = new LocationsProcessor(JSON.decode(response));
+  //
+  //await uiLoader.setState(UIStates.prepare);
+  //jsonNpms.forEach((node) {
+  //  NpBranch branch = new NpBranch(
+  //    new LatLon(node['lat'], node['lon']),
+  //    {'addr': node['addr'], 'city': node['city']},
+  //    new LocationName.fromNP(node['city']),
+  //    node['n']
+  //  );
+  //  npms.add(branch);
+  //});
+  //
+  //jsonOsmms.forEach((node) {
+  //  OsmBranch branch = new OsmBranch(
+  //      new LatLon(node['lat'], node['lon']),
+  //      node['tags']
+  //  );
+  //  osmms.add(branch);
+  //});
+  //
+  //MapWrapper map = new MapWrapper(locationsProcessor);
+  //LocationsSynchronizer locationsSynchronizer = new LocationsSynchronizer(branchesProcessor);
+  //await uiLoader.setState(UIStates.group);
+  //await groupByPlace();
+  //await uiLoader.setState(UIStates.sync);
+  //List<Map<String, Branch>> results = locationsSynchronizer.sync();
+  //await uiLoader.setState(UIStates.display);
+  //map.displayMarkers(osmms, MapWrapper.OSMM_COLOR, 'OSMMs');
+  //map.displayMarkers(npms, MapWrapper.NPM_COLOR, 'NPMs');
+  //map.displayResults(results);
+  //map.initMap();
+  //map.displayUnmerged(branchesProcessor, results);
+  //map.displayCities(branchesProcessor);
+  //uiLoader.setState(UIStates.end);
 }
 
