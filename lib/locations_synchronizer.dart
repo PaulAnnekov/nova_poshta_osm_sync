@@ -1,4 +1,5 @@
 import "package:nova_poshta_osm_sync/branch.dart";
+import "package:nova_poshta_osm_sync/np_branch.dart";
 import "package:nova_poshta_osm_sync/lat_lon.dart";
 import "package:nova_poshta_osm_sync/branches_processor.dart";
 import "package:nova_poshta_osm_sync/location_processor.dart";
@@ -31,7 +32,7 @@ class LocationsSynchronizer {
    * Merge an NP and OSM branch with the same number into branch that has the same house_number + road as in NP address.
    */
   _mergeByRoadAndHouse(Map<String, List<Branch>> branches) {
-    branches['npms'].forEach((npm) {
+    branches['npms'].forEach((NpBranch npm) {
       if (_isMerged(npm))
         return;
     });
