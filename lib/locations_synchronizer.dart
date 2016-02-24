@@ -6,8 +6,9 @@ import "package:nova_poshta_osm_sync/location_processor.dart";
 
 class LocationsSynchronizer {
   BranchesProcessor _branchesProcessor;
+  LocationsProcessor _locationsProcessor;
   List<Map<String, Branch>> _results = [];
-  LocationsSynchronizer(this._branchesProcessor);
+  LocationsSynchronizer(this._branchesProcessor, this._locationsProcessor);
 
   List<Map<String, Branch>> sync() {
     this._branchesProcessor.groupedBranches.forEach((groupId, branches) => _syncSingle(branches));
@@ -35,7 +36,29 @@ class LocationsSynchronizer {
     branches['npms'].forEach((NpBranch npm) {
       if (_isMerged(npm))
         return;
+      var osmm = _getBranchByNumber(branches['osmms'], npm.number);
+      if (osmm == null || _isMerged(osmm))
+        return;
+      var npAddress = npm.getAddress();
+      if (npAddress == null)
+        return;
+      var npNomatimAddress = _locationsProcessor.getAddress(npm.loc);
+      var osmNomatimAddress = _locationsProcessor.getAddress(osmm.loc);
+      if (npNomatimAddress == null || osmNomatimAddress == null)
+        return;
+      var npRelevancy = _checkRelevancy(npAddress, npNomatimAddress);
+      var osmRelevancy = _checkRelevancy(npAddress, osmNomatimAddress);
+      if (npRelevancy == 0 && osmRelevancy == 0)
+        return;
+      _results.add({
+        'result': npRelevancy > osmRelevancy ? npm : osmm,
+        'from': npRelevancy > osmRelevancy ? osmm : npm
+      });
     });
+  }
+
+  _checkRelevancy(Map correct, Map guess) {
+    return (correct['street'] == guess['street'] ? 1 : 0) + (correct['house'] == guess['house'] ? 1 : 0);
   }
 
   /**
@@ -118,7 +141,7 @@ class LocationsSynchronizer {
       if (_isMerged(npm))
         return;
       var osmm = _getBranchByNumber(branches['osmms'], npm.number);
-      if (osmm == null)
+      if (osmm == null || _isMerged(osmm))
         return;
       if (_isNear(npm.loc, osmm.loc, 300)) {
         _results.add({

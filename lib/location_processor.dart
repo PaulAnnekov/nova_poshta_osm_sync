@@ -1,6 +1,9 @@
 import 'dart:math';
 import 'package:nova_poshta_osm_sync/location_name.dart';
 import 'package:nova_poshta_osm_sync/lat_lon.dart';
+import 'package:logging/logging.dart';
+
+final Logger log = new Logger('location_processor');
 
 class LocationsProcessor {
   Map<String, Map> _locations;
@@ -39,6 +42,19 @@ class LocationsProcessor {
 
   getLocation(LatLon latLon) {
     return _locations[latLon.toId()];
+  }
+
+  getAddress(LatLon latLon) {
+    var location = _locations[latLon.toId()];
+    var street = location['address']['road'];
+    if (street == null)
+      return null;
+    var match = new RegExp(r'((.+) |(.+))').firstMatch(street);
+    if (match == null) {
+      log.shout("Can't get street for location: $location");
+      return null;
+    }
+    return {"street": match.group(1), "house": location['address']['house_number']};
   }
 
   /**

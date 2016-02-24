@@ -130,7 +130,7 @@ onReady(_) async {
   });
 
   MapWrapper map = new MapWrapper(locationsProcessor);
-  LocationsSynchronizer locationsSynchronizer = new LocationsSynchronizer(branchesProcessor);
+  LocationsSynchronizer locationsSynchronizer = new LocationsSynchronizer(branchesProcessor, locationsProcessor);
   await uiLoader.setState(UIStates.group);
   await groupByPlace();
   await uiLoader.setState(UIStates.sync);
