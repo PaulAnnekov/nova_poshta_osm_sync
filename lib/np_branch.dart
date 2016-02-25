@@ -30,10 +30,13 @@ class NpBranch extends Branch {
     }
   }
 
-  getAddress() {
+  Map<String, LocationName> getAddress() {
     _parseAddress();
     if (_parsedAddress == null)
       return null;
-    return {"street": _parsedAddress.group(1), "house": _parsedAddress.group(2)};
+    return {
+      "street": new LocationName(_parsedAddress.group(1)),
+      "house": new LocationName(_parsedAddress.group(2))
+    };
   }
 }

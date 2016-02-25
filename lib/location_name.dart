@@ -12,6 +12,6 @@ class LocationName {
   bool operator ==(LocationName other) => this.toString() == other.toString();
 
   String toString() {
-    return _originalName.toLowerCase().replaceAll(new RegExp("[`'\"’ -]"),'');
+    return _originalName.trim().toLowerCase().replaceAll(new RegExp("[`'\"’ -]"),'');
   }
 }

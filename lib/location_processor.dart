@@ -44,17 +44,22 @@ class LocationsProcessor {
     return _locations[latLon.toId()];
   }
 
-  getAddress(LatLon latLon) {
+  Map<String, LocationName> getAddress(LatLon latLon) {
     var location = _locations[latLon.toId()];
-    var street = location['address']['road'];
-    if (street == null)
-      return null;
-    var match = new RegExp(r'((.+) |(.+))').firstMatch(street);
-    if (match == null) {
-      log.shout("Can't get street for location: $location");
-      return null;
+    var street;
+    if (location['address']['road'] != null) {
+      var match = new RegExp(r'((.+) |(.+))').firstMatch(location['address']['road']);
+      if (match == null) {
+        log.shout("Can't get street for location: $location");
+        return null;
+      }
+      street = match.group(1);
     }
-    return {"street": match.group(1), "house": location['address']['house_number']};
+    var house = location['address']['house_number'];
+    return {
+      "street": street != null ? new LocationName(street) : null,
+      "house": house != null ? new LocationName(house) : null
+    };
   }
 
   /**
