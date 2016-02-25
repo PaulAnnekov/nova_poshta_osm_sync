@@ -22,6 +22,7 @@ class LocationsSynchronizer {
     _mergeNearHouseNumber(branches);
     _mergeNpNoMatch(branches);
     _mergeByRoadAndHouse(branches);
+    _mergeByCitySize(branches);
     return _results;
   }
 
@@ -30,7 +31,8 @@ class LocationsSynchronizer {
   }
 
   /**
-   * Merge an NP and OSM branch with the same number into branch that has the same house_number + road as in NP address.
+   * Merge an NP and OSM branch with the same number into branch that house_number + road combination more relevant
+   * towards NP address.
    */
   _mergeByRoadAndHouse(Map<String, List<Branch>> branches) {
     branches['npms'].forEach((NpBranch npm) {
@@ -71,6 +73,23 @@ class LocationsSynchronizer {
       _results.add({
         'result': npm,
         'from': npm
+      });
+    });
+  }
+
+  /**
+   * Merge by city size.
+   */
+  _mergeByCitySize(Map<String, List<Branch>> branches) {
+    branches['npms'].forEach((npm) {
+      if (_isMerged(npm))
+        return;
+      var osmm = _getBranchByNumber(branches['osmms'], npm.number);
+      if (osmm == null || _isMerged(osmm))
+        return;
+      _results.add({
+        'result': branches['npms'].length >= 4 ? npm : osmm,
+        'from': branches['npms'].length >= 4 ? osmm : npm
       });
     });
   }
