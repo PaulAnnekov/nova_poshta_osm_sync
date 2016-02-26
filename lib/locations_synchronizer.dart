@@ -2,6 +2,7 @@ import 'dart:mirrors';
 import "package:nova_poshta_osm_sync/branch.dart";
 import "package:nova_poshta_osm_sync/np_branch.dart";
 import "package:nova_poshta_osm_sync/lat_lon.dart";
+import "package:nova_poshta_osm_sync/location_name.dart";
 import "package:nova_poshta_osm_sync/branches_processor.dart";
 import "package:nova_poshta_osm_sync/location_processor.dart";
 
@@ -22,6 +23,7 @@ class LocationsSynchronizer {
     _mergeNearDifferentNumbers(branches);
     _mergeNearHouseNumber(branches);
     _mergeByRoadAndHouse(branches);
+    _mergeNearDescription(branches);
     _mergeByCitySize(branches);
     _mergeNpNoMatch(branches);
     return _results;
@@ -135,10 +137,12 @@ class LocationsSynchronizer {
     branches['npms'].forEach((npm) {
       if (_isMerged(npm))
         return;
+      var npHouse = _locationsProcessor.getAddress(npm.loc)['house'];
+      if (npHouse == null)
+        return;
       for (var osmm in branches['osmms']) {
-        var npHouse = _locationsProcessor.getAddress(npm.loc)['house'];
         var osmHouse = _locationsProcessor.getAddress(osmm.loc)['house'];
-        if (!_isMerged(osmm) && _isNear(npm.loc, osmm.loc, 300) && npHouse == osmHouse)
+        if (!_isMerged(osmm) && _isNear(npm.loc, osmm.loc, 300) && npHouse != null && npHouse == osmHouse)
         {
           _results.add({
             'result': osmm,
@@ -164,6 +168,35 @@ class LocationsSynchronizer {
             'result': osmm,
             'from': npm,
             'strategy': 'mergeNearDifferentNumbers'
+          });
+          return;
+        }
+      }
+    });
+  }
+
+  /**
+   * Merge an NP and OSM branch with different numbers, a distance of less than 300 meters and if we can find NP
+   * house + street in `description` tag of OSM.
+   */
+  _mergeNearDescription(Map<String, List<Branch>> branches) {
+    branches['npms'].forEach((NpBranch npm) {
+      if (_isMerged(npm))
+        return;
+      var npAddress = npm.getAddress();
+      if (npAddress == null)
+        return;
+      for (var osmm in branches['osmms']) {
+        if (_isMerged(osmm) || osmm.customTags['description'] == null)
+          continue;
+        var description = new LocationName(osmm.customTags['description']).toString();
+        if (_isNear(npm.loc, osmm.loc, 300) && description.contains(npAddress['house'].toString()) &&
+            description.contains(npAddress['street'].toString()))
+        {
+          _results.add({
+            'result': osmm,
+            'from': npm,
+            'strategy': 'mergeNearDescription'
           });
           return;
         }

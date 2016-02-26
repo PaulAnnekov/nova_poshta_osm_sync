@@ -23,10 +23,10 @@ class NpBranch extends Branch {
      * Відділення №4: (до 30 кг)проспект Миру 72/5 (ТЦ "Проспект")
      * Відділення №7: просп. Перемоги, 46-а
      */
-    _parsedAddress = new RegExp(r"[\u0400-\u04FF.]+ ([\u0400-\u04FF \-']+)[ ,]{1,2}([0-9][0-9-/\\\u0400-\u04FF]*)")
+    _parsedAddress = new RegExp('[\u0400-\u04FF.]+ ([\u0400-\u04FF "\'-]+)[ ,]{1,2}([0-9][0-9-/\\\u0400-\u04FF]*)')
         .firstMatch(customTags['addr']);
     if (_parsedAddress == null) {
-      throw new Exception("Can't get address for $this");
+      log.warning("Can't get address for $this");
     }
   }
 
