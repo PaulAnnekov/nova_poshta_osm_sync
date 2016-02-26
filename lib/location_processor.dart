@@ -50,8 +50,7 @@ class LocationsProcessor {
     if (location['address']['road'] != null) {
       var match = new RegExp(r'((.+) |(.+))').firstMatch(location['address']['road']);
       if (match == null) {
-        log.shout("Can't get street for location: $location");
-        return null;
+        throw new Exception("Can't get street for location: $location");
       }
       street = match.group(1);
     }

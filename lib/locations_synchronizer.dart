@@ -120,8 +120,9 @@ class LocationsSynchronizer {
       if (_isMerged(npm))
         return;
       for (var osmm in branches['osmms']) {
-        if (!_isMerged(osmm) && _isNear(npm.loc, osmm.loc, 300) && npm.customTags['house_number'] ==
-            osmm.customTags['house_number'])
+        var npHouse = _locationsProcessor.getAddress(npm.loc)['house'];
+        var osmHouse = _locationsProcessor.getAddress(osmm.loc)['house'];
+        if (!_isMerged(osmm) && _isNear(npm.loc, osmm.loc, 300) && npHouse == osmHouse)
         {
           _results.add({
             'result': osmm,
