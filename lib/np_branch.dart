@@ -26,7 +26,7 @@ class NpBranch extends Branch {
     _parsedAddress = new RegExp(r'[\u0400-\u04FF.]+ ([\u0400-\u04FF -]+)[ ,]{1,2}([0-9][0-9-/\\\u0400-\u04FF]*)')
         .firstMatch(customTags['addr']);
     if (_parsedAddress == null) {
-      log.shout("Can't get address for $this");
+      throw new Exception("Can't get address for $this");
     }
   }
 
