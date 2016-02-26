@@ -20,9 +20,9 @@ class LocationsSynchronizer {
     _mergeNear(branches);
     _mergeNearDifferentNumbers(branches);
     _mergeNearHouseNumber(branches);
-    _mergeNpNoMatch(branches);
     _mergeByRoadAndHouse(branches);
     _mergeByCitySize(branches);
+    _mergeNpNoMatch(branches);
     return _results;
   }
 
@@ -60,11 +60,18 @@ class LocationsSynchronizer {
   }
 
   _checkRelevancy(Map correct, Map guess) {
-    return (correct['street'] == guess['street'] ? 1 : 0) + (correct['house'] == guess['house'] ? 1 : 0);
+    var relevancy = 0;
+    if (correct['house'] == guess['house']) {
+      relevancy++;
+      if (correct['street'] == guess['street']) {
+        relevancy++;
+      }
+    }
+    return relevancy;
   }
 
   /**
-   * Merge an NP single in a city.
+   * Merge an NPs in a city w/o OSMs.
    */
   _mergeSingle(Map<String, List<Branch>> branches) {
     branches['npms'].forEach((npm) {
@@ -84,7 +91,11 @@ class LocationsSynchronizer {
     branches['npms'].forEach((npm) {
       if (_isMerged(npm))
         return;
-      var osmm = _getBranchByNumber(branches['osmms'], npm.number);
+      var osmm;
+      if (branches['npms'].length == 1 && branches['osmms'].length == 1 && branches['osmms'][0].number == null)
+        osmm = branches['osmms'][0];
+      else
+        osmm = _getBranchByNumber(branches['osmms'], npm.number);
       if (osmm == null || _isMerged(osmm))
         return;
       _results.add({
