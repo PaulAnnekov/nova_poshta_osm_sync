@@ -1,3 +1,4 @@
+import 'dart:mirrors';
 import "package:nova_poshta_osm_sync/branch.dart";
 import "package:nova_poshta_osm_sync/np_branch.dart";
 import "package:nova_poshta_osm_sync/lat_lon.dart";
@@ -54,7 +55,8 @@ class LocationsSynchronizer {
         return;
       _results.add({
         'result': npRelevancy > osmRelevancy ? npm : osmm,
-        'from': npRelevancy > osmRelevancy ? osmm : npm
+        'from': npRelevancy > osmRelevancy ? osmm : npm,
+        'strategy': 'mergeByRoadAndHouse'
       });
     });
   }
@@ -79,7 +81,8 @@ class LocationsSynchronizer {
         return;
       _results.add({
         'result': npm,
-        'from': npm
+        'from': npm,
+        'strategy': 'mergeSingle'
       });
     });
   }
@@ -100,7 +103,8 @@ class LocationsSynchronizer {
         return;
       _results.add({
         'result': branches['npms'].length >= 4 ? npm : osmm,
-        'from': branches['npms'].length >= 4 ? osmm : npm
+        'from': branches['npms'].length >= 4 ? osmm : npm,
+        'strategy': 'mergeByCitySize'
       });
     });
   }
@@ -118,7 +122,8 @@ class LocationsSynchronizer {
       }
       _results.add({
         'result': npm,
-        'from': npm
+        'from': npm,
+        'strategy': 'mergeNpNoMatch'
       });
     });
   }
@@ -137,7 +142,8 @@ class LocationsSynchronizer {
         {
           _results.add({
             'result': osmm,
-            'from': npm
+            'from': npm,
+            'strategy': 'mergeNearHouseNumber'
           });
           return;
         }
@@ -156,7 +162,8 @@ class LocationsSynchronizer {
         if (!_isMerged(osmm) && _isNear(npm.loc, osmm.loc, 100)) {
           _results.add({
             'result': osmm,
-            'from': npm
+            'from': npm,
+            'strategy': 'mergeNearDifferentNumbers'
           });
           return;
         }
@@ -177,7 +184,8 @@ class LocationsSynchronizer {
       if (_isNear(npm.loc, osmm.loc, 300)) {
         _results.add({
           'result': osmm,
-          'from': npm
+          'from': npm,
+          'strategy': 'mergeNear'
         });
       }
     });
