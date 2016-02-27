@@ -55,9 +55,10 @@ class MapWrapper {
   displayResults(List<Map<String, dynamic>> results) {
     L.LayerGroup layerGroup = L.layerGroup();
     results.forEach((result) {
-      var points = [result['result'].loc.toLeaflet()];
+      var points = [];
       if (result['from'] != null)
         points.add(result['from'].loc.toLeaflet());
+      points.add(result['result'].loc.toLeaflet());
       var polyline = L.polyline(points, new L.PathOptions(color: 'green')).bindPopup(result['strategy']);
       polyline.addTo(layerGroup);
       if (points.length == 1)
