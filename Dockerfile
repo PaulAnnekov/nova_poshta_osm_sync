@@ -15,4 +15,4 @@ USER nova_poshta_osm
 
 ENV PATH /usr/lib/dart/bin:$PATH
 
-CMD cd /home/nova_poshta_osm/project && pub get && pub serve --mode=release web data
+CMD cd /home/nova_poshta_osm/project && pub get && pub serve --mode=release --hostname=0.0.0.0 web data
