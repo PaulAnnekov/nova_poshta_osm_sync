@@ -40,23 +40,33 @@ class LocationsSynchronizer {
     branches['npms'].forEach((NpBranch npm) {
       if (_isMerged(npm))
         return;
-      var osmm = _getBranchByNumber(branches['osmms'], npm.number);
-      if (osmm == null || _isMerged(osmm))
+      var osmms = _getBranchByNumber(branches['osmms'], npm.number);
+      if (osmms.isEmpty)
         return;
       var npAddress = npm.getAddress();
       if (npAddress == null)
         return;
       var npNomatimAddress = _locationsProcessor.getAddress(npm.loc);
-      var osmNomatimAddress = _locationsProcessor.getAddress(osmm.loc);
-      if (npNomatimAddress == null || osmNomatimAddress == null)
+      if (npNomatimAddress == null)
         return;
+      var mostRelevantOsmm;
+      var osmmRelevancy = 0;
+      osmms.forEach((osmm) {
+        if (_isMerged(osmm))
+          return;
+        var osmNomatimAddress = _locationsProcessor.getAddress(osmm.loc);
+        var relevancy = _checkRelevancy(npAddress, osmNomatimAddress);
+        if (relevancy > osmmRelevancy) {
+          mostRelevantOsmm = osmm;
+          osmmRelevancy = relevancy;
+        }
+      });
       var npRelevancy = _checkRelevancy(npAddress, npNomatimAddress);
-      var osmRelevancy = _checkRelevancy(npAddress, osmNomatimAddress);
-      if (npRelevancy == 0 && osmRelevancy == 0)
+      if (npRelevancy == 0 && osmmRelevancy == 0)
         return;
       _results.add({
-        'result': npRelevancy > osmRelevancy ? npm : osmm,
-        'from': npRelevancy > osmRelevancy ? osmm : npm,
+        'result': npRelevancy > osmmRelevancy ? npm : mostRelevantOsmm,
+        'from': npRelevancy > osmmRelevancy ? mostRelevantOsmm : npm,
         'strategy': 'mergeByRoadAndHouse'
       });
     });
@@ -82,7 +92,7 @@ class LocationsSynchronizer {
         return;
       _results.add({
         'result': npm,
-        'from': npm,
+        'from': null,
         'strategy': 'mergeSingle'
       });
     });
@@ -98,8 +108,10 @@ class LocationsSynchronizer {
       var osmm;
       if (branches['npms'].length == 1 && branches['osmms'].length == 1 && branches['osmms'][0].number == null)
         osmm = branches['osmms'][0];
-      else
-        osmm = _getBranchByNumber(branches['osmms'], npm.number);
+      else {
+        osmm = _getBranchByNumber(branches['osmms'], npm.number).firstWhere((value) => !_isMerged(value),
+            orElse: () => null);
+      }
       if (osmm == null || _isMerged(osmm))
         return;
       _results.add({
@@ -123,7 +135,7 @@ class LocationsSynchronizer {
       }
       _results.add({
         'result': npm,
-        'from': npm,
+        'from': null,
         'strategy': 'mergeNpNoMatch'
       });
     });
@@ -210,12 +222,23 @@ class LocationsSynchronizer {
     branches['npms'].forEach((npm) {
       if (_isMerged(npm))
         return;
-      var osmm = _getBranchByNumber(branches['osmms'], npm.number);
-      if (osmm == null || _isMerged(osmm))
+      var osmms = _getBranchByNumber(branches['osmms'], npm.number);
+      if (osmms.isEmpty)
         return;
-      if (_isNear(npm.loc, osmm.loc, 300)) {
+      var nearest;
+      var minDistance = double.INFINITY;
+      osmms.forEach((branch) {
+        if (_isMerged(branch))
+          return;
+        var distance = LocationsProcessor.calculateDistance(branch.loc, npm.loc);
+        if (distance < minDistance) {
+          nearest = branch;
+          minDistance = distance;
+        }
+      });
+      if (minDistance <= 300) {
         _results.add({
-          'result': osmm,
+          'result': nearest,
           'from': npm,
           'strategy': 'mergeNear'
         });
@@ -227,12 +250,12 @@ class LocationsSynchronizer {
     return LocationsProcessor.calculateDistance(point1, point2) <= max;
   }
 
-  Branch _getBranchByNumber(List<Branch> branches, int number) {
-    var branch = branches.firstWhere((Branch branch) {
+  List<Branch> _getBranchByNumber(List<Branch> branches, int number) {
+    var found = branches.where((Branch branch) {
       if (branch.number == null)
         return false;
       return branch.number == number;
-    }, orElse: () => null);
-    return branch;
+    });
+    return found.toList();
   }
 }

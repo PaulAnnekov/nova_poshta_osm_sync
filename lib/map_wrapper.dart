@@ -55,10 +55,12 @@ class MapWrapper {
   displayResults(List<Map<String, dynamic>> results) {
     L.LayerGroup layerGroup = L.layerGroup();
     results.forEach((result) {
-      var polyline = L.polyline([result['from'].loc.toLeaflet(), result['result'].loc.toLeaflet()],
-          new L.PathOptions(color: 'green')).bindPopup(result['strategy']);
+      var points = [result['result'].loc.toLeaflet()];
+      if (result['from'] != null)
+        points.add(result['from'].loc.toLeaflet());
+      var polyline = L.polyline(points, new L.PathOptions(color: 'green')).bindPopup(result['strategy']);
       polyline.addTo(layerGroup);
-      if (result['from'] == result['result'])
+      if (points.length == 1)
         return;
       var polylineDecorator = L.polylineDecorator(polyline, new L.PolylineDecoratorOptions(patterns:
         [new L.Pattern(repeat: 0, offset: '100%', symbol: L.arrowHead(new L.SymbolArrowHeadOptions(pixelSize: 15,
