@@ -1,4 +1,3 @@
-import 'dart:mirrors';
 import "package:nova_poshta_osm_sync/branch.dart";
 import "package:nova_poshta_osm_sync/np_branch.dart";
 import "package:nova_poshta_osm_sync/lat_lon.dart";

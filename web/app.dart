@@ -102,11 +102,11 @@ onReady(_) async {
 
   uiLoader.setState(UIStates.init);
   await uiLoader.setState(UIStates.data);
-  var response = await HttpRequest.getString('//localhost:8081/npm.json');
+  var response = await HttpRequest.getString('/npm.json');
   var jsonNpms = JSON.decode(response);
-  response = await HttpRequest.getString('//localhost:8081/osmm.json');
+  response = await HttpRequest.getString('/osmm.json');
   var jsonOsmms = JSON.decode(response)['elements'];
-  response = await HttpRequest.getString('//localhost:8081/locations_cache.json');
+  response = await HttpRequest.getString('/locations_cache.json');
   locationsProcessor = new LocationsProcessor(JSON.decode(response));
 
   await uiLoader.setState(UIStates.prepare);
