@@ -60,6 +60,8 @@ class LocationsSynchronizer {
           mostRelevantOsmm = osmm;
           osmmRelevancy = relevancy;
         }
+        if (mostRelevantOsmm == null)
+          mostRelevantOsmm = osmm;
       });
       var npRelevancy = _checkRelevancy(npAddress, npNomatimAddress);
       if (npRelevancy == 0 && osmmRelevancy == 0)
