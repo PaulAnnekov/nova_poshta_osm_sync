@@ -7,11 +7,23 @@ Put Nova Poshta's markers to `data/npm.json`. Format:
 ```
 [{
   "n": 1, // branch number in city
-  "lon": 36.938391476870000,
-  "lat": 50.295151744070000,
+  "lon": 36.93839147687,
+  "lat": 50.29515174407,
   "addr": "Відділення №1: вул. Дзержинського, 17",
   "city": "Вовчанськ"
 },...]
+```
+NP output filter example:
+```
+var filtered = xhrResponse.response.filter((element) => element.warehouseType!='postomat').map((e) => {
+if (typeof e.x != 'string') 
+    return; 
+return {
+    n: parseInt(e.number), 
+    lon: parseFloat(e.x), 
+    lat: parseFloat(e.y), 
+    addr: e.address, city: e.city
+}})
 ```
 
 Put OSM's markers to `data/osmm.json`. Format:                                      
@@ -19,7 +31,7 @@ Put OSM's markers to `data/osmm.json`. Format:
 {
  "elements": [{
    "type": "node",
-   "id": 306635381,
+   "id": "306635381",
    "lat": 48.4609747,
    "lon": 35.0581093,
    "tags": {
